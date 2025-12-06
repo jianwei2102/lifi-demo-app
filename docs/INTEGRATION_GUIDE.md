@@ -1,15 +1,16 @@
 # Li.Fi Integration Guide
 
-This guide provides step-by-step instructions for integrating Li.Fi into your bridge application. We'll start with the simplest approach (Widget) and then move to the more advanced SDK integration.
+This guide provides step-by-step instructions for integrating Li.Fi into your bridge application. We'll start with the simplest approach (Widget) , then move to the more advanced SDK integration.
 
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
 2. [Step 1: Installation](#step-1-installation)
 3. [Step 2: Widget Integration (Simplest)](#step-2-widget-integration-simplest)
-4. [Step 3: SDK Integration (Advanced)](#step-3-sdk-integration-advanced)
-5. [Testing](#testing)
-6. [Troubleshooting](#troubleshooting)
+4. [Step 3: Wagmi Setup (For SDK Mode)](#step-3-wagmi-setup-for-sdk-mode)
+5. [Step 4: SDK Integration (Advanced)](#step-4-sdk-integration-advanced)
+6. [Testing](#testing)
+7. [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 
@@ -22,29 +23,98 @@ This guide provides step-by-step instructions for integrating Li.Fi into your br
 
 ### 1.1 Install Required Packages
 
-First, install the necessary packages for wallet connection and Li.Fi integration:
+First, install the necessary packages for Li.Fi integration:
+
+```bash
+npm install @lifi/widget @lifi/sdk
+```
+
+Or with yarn:
+
+```bash
+yarn add @lifi/widget @lifi/sdk
+```
+
+**Note:** The widget has its own wallet connection built-in, so you can start using it immediately without additional setup! Wagmi is only needed if you want to use SDK mode (Step 4).
+
+If you plan to use SDK mode, you'll also need:
 
 ```bash
 npm install wagmi viem @tanstack/react-query
-npm install @lifi/widget
-npm install @lifi/sdk
 ```
 
 Or with yarn:
 
 ```bash
 yarn add wagmi viem @tanstack/react-query
-yarn add @lifi/widget
-yarn add @lifi/sdk
 ```
 
 **Why @tanstack/react-query?**
 
 - Wagmi uses React Query internally for state management
 - It handles caching, refetching, and synchronization of wallet data
-- It's a required dependency - you don't need to use it directly, wagmi handles it
 
-### 1.2 Configure WalletConnect (Optional - You Can Skip This)
+## Step 2: Widget Integration (Simplest)
+
+The Li.Fi widget is the easiest way to integrate cross-chain bridging. It handles all UI, wallet connection, and functionality internally - no additional setup required!
+
+### 2.1 Enable the Widget Component
+
+1. Open `components/LifiWidget.tsx`
+2. The widget is already configured and ready to use
+3. The widget will automatically appear when you select "Widget" mode in the UI
+
+The widget component uses dynamic import to avoid SSR hydration issues and includes proper loading states.
+
+### 2.2 Widget Features
+
+The widget includes everything you need:
+
+- **Built-in wallet connection** - No need to set up wagmi for widget mode
+- Chain selection
+- Token selection
+- Quote fetching
+- Transaction execution
+- Status updates
+- Transaction history
+
+### 2.3 Configure Widget Theme (Optional)
+
+You can customize the widget theme to match your design by editing the `widgetConfig` in `components/LifiWidget.tsx`:
+
+```tsx
+const widgetConfig: WidgetConfig = {
+  integrator: "Lifi-demo-tutorial",
+  theme: {
+    container: {
+      border: "none",
+      borderRadius: "16px",
+    },
+    // Add more theme customization here
+  },
+};
+```
+
+See the [Li.Fi Widget documentation](https://docs.li.fi/widget/install-widget) for more customization options.
+
+### 2.4 Test the Widget
+
+1. Start your development server: `npm run dev`
+2. Navigate to `http://localhost:3000`
+3. Click the "Widget" tab
+4. The widget will appear with its own "Connect Wallet" button
+5. Connect your wallet through the widget
+6. Try bridging a small amount of tokens
+
+**That's it!** The widget works completely independently and doesn't require any wagmi setup.
+
+## Step 3: Wagmi Setup (For SDK Mode)
+
+**Important:** This step is only needed if you want to use SDK mode (Step 4). The widget mode (Step 2) works without wagmi since it has its own wallet connection.
+
+If you want to build a custom UI using the SDK, you'll need to set up wagmi for wallet management.
+
+### 3.1 Configure WalletConnect (Optional - You Can Skip This)
 
 **Note:** WalletConnect is completely optional! The default setup uses `injected()` and `metaMask()` connectors, which work with any browser wallet (MetaMask, Brave, etc.) without any additional configuration.
 
@@ -59,7 +129,7 @@ If you want to use WalletConnect (for mobile wallet connections), you'll need a 
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your-project-id-here
 ```
 
-### 1.3 Enable Wagmi Provider
+### 3.2 Enable Wagmi Provider
 
 1. Open `lib/wagmi.ts` and uncomment the wagmi configuration:
 
@@ -67,12 +137,10 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your-project-id-here
    - Uncomment the `wagmiConfig` export
    - Remove or comment out the placeholder export
 
-2. Open `app/providers.tsx` and uncomment the WagmiProvider setup:
+2. Open `app/providers.tsx` - the WagmiProvider is already configured with proper SSR handling:
 
-   - Uncomment the imports (`WagmiProvider`, `QueryClient`, `QueryClientProvider`)
-   - Uncomment the `queryClient` initialization
-   - Uncomment the return statement with `WagmiProvider` and `QueryClientProvider`
-   - Remove the placeholder return statement
+   - The `QueryClient` is set up with proper SSR configuration to avoid hydration errors
+   - The providers are already wrapped correctly
 
 3. Verify `app/layout.tsx` wraps your app with the Providers component (it should already be there):
 
@@ -90,7 +158,7 @@ export default function RootLayout({ children }) {
 }
 ```
 
-### 1.4 Enable Wallet Hook
+### 3.3 Enable Wallet Hook
 
 1. Open `hooks/useWallet.ts` and uncomment the wallet hook:
    - Uncomment the import statement: `import { useAccount, useConnect, useDisconnect, useBalance } from "wagmi";`
@@ -98,130 +166,54 @@ export default function RootLayout({ children }) {
    - Uncomment the return statement with actual values
    - Remove the placeholder return statement
 
-### 1.5 Connect Wallet in Main Page
+### 3.4 Connect Wallet in Main Page (For SDK Mode)
 
-1. Open `app/page.tsx` and uncomment the wallet integration:
-   - Uncomment the import: `import { useWallet } from "@/hooks/useWallet";`
-   - Uncomment the hook call: `const { address, isConnected, connect, disconnect, connectors } = useWallet();`
-   - In the Connect Wallet button's onClick handler, uncomment the connection logic
-   - In the button's content, uncomment the conditional display of address
+1. Open `app/page.tsx`
+2. The wallet connection button is already set up and will only show in SDK mode
+3. The button automatically appears when you switch to SDK mode
 
-After completing these steps, your wallet connection should work! Try clicking the "Connect Wallet" button.
+After completing these steps, your wallet connection should work in SDK mode! The widget mode doesn't need this setup.
 
-## Step 2: Widget Integration (Simplest)
+## Step 4: SDK Integration (Advanced)
 
-The Li.Fi widget is the easiest way to integrate cross-chain bridging. It handles all UI and functionality internally.
+The SDK approach gives you full control over the UI while using Li.Fi's routing and execution logic. This requires wagmi setup from Step 3.
 
-### 2.1 Enable the Widget Component
-
-1. Open `components/LifiWidget.tsx`
-2. Uncomment the widget import and configuration code
-3. The widget will automatically appear when you select "Widget" mode in the UI
-
-### 2.2 Configure Widget Theme (Optional)
-
-You can customize the widget theme to match your design:
-
-```tsx
-const widget = new LiFiWidget({
-  theme: {
-    palette: {
-      primary: {
-        main: "#8b5cf6", // Your primary color
-      },
-      secondary: {
-        main: "#3b82f6", // Your secondary color
-      },
-    },
-  },
-});
-```
-
-### 2.3 Test the Widget
-
-1. Start your development server: `npm run dev`
-2. Navigate to `http://localhost:3000`
-3. Click the "Widget" tab
-4. Connect your wallet
-5. Try bridging a small amount of tokens
-
-The widget handles:
-
-- Chain selection
-- Token selection
-- Quote fetching
-- Transaction execution
-- Status updates
-
-## Step 3: SDK Integration (Advanced)
-
-The SDK approach gives you full control over the UI while using Li.Fi's routing and execution logic.
-
-### 3.1 Enable Li.Fi SDK Configuration
+### 4.1 Enable Li.Fi SDK Configuration
 
 1. Open `lib/lifi/config.ts`
 2. Uncomment the Li.Fi SDK initialization
 3. Replace `'your-app-name'` with your actual app name
 
-### 3.2 Enable Li.Fi Hooks
+### 4.2 Enable Li.Fi Hooks
 
 1. Open `lib/lifi/hooks.ts`
 2. Uncomment all the hook implementations
 3. The hooks will now fetch real data from Li.Fi
 
-### 3.3 Enable Wallet Hook
-
-1. Open `hooks/useWallet.ts`
-2. Uncomment the wagmi hooks
-3. The wallet connection will now work
-
-### 3.4 Update BridgeCard Component
+### 4.3 Update BridgeCard Component
 
 1. Open `components/BridgeCard.tsx`
-2. Uncomment all the STEP 3 sections:
+2. Uncomment all the STEP 4 sections:
    - Import statements for Li.Fi hooks
    - Hook calls
    - Quote fetching logic
    - Bridge execution logic
 
-### 3.5 Update Chain and Token Selectors
+### 4.4 Update Chain and Token Selectors
 
 The ChainSelector and TokenSelector components will automatically use real data once the hooks are enabled. No changes needed!
 
-### 3.6 Connect Wallet in Header
+### 4.5 Test SDK Integration
 
-1. Open `app/page.tsx`
-2. Import and use the `useWallet` hook
-3. Update the "Connect Wallet" button to use the wallet connection:
-
-```tsx
-import { useWallet } from "@/hooks/useWallet";
-
-// In your component:
-const { address, isConnected, connect, disconnect, connectors } = useWallet();
-
-// Update button:
-<button
-  onClick={() =>
-    isConnected ? disconnect() : connect({ connector: connectors[0] })
-  }
->
-  {isConnected
-    ? `${address?.slice(0, 6)}...${address?.slice(-4)}`
-    : "Connect Wallet"}
-</button>;
-```
-
-### 3.7 Test SDK Integration
-
-1. Make sure all STEP 3 sections are uncommented
-2. Start your development server
-3. Navigate to `http://localhost:3000`
-4. Click the "SDK" tab
-5. Connect your wallet
-6. Select chains and tokens
-7. Enter an amount
-8. Click "Bridge Tokens"
+1. Make sure all STEP 4 sections are uncommented
+2. Ensure wagmi is set up (Step 3)
+3. Start your development server
+4. Navigate to `http://localhost:3000`
+5. Click the "SDK" tab
+6. Connect your wallet using the header button
+7. Select chains and tokens
+8. Enter an amount
+9. Click "Bridge Tokens"
 
 ## Testing
 
@@ -229,7 +221,8 @@ const { address, isConnected, connect, disconnect, connectors } = useWallet();
 
 1. **Widget Mode:**
 
-   - Connect wallet
+   - No wagmi setup required
+   - Connect wallet through widget's built-in button
    - Select source and destination chains
    - Select tokens
    - Enter amount
@@ -237,7 +230,8 @@ const { address, isConnected, connect, disconnect, connectors } = useWallet();
    - Verify transaction on block explorer
 
 2. **SDK Mode:**
-   - Connect wallet
+   - Requires wagmi setup (Step 3)
+   - Connect wallet using header button
    - Verify chains load from Li.Fi
    - Verify tokens load for selected chain
    - Enter amount and verify quote appears
@@ -260,13 +254,27 @@ Start with testnets to avoid spending real funds:
 - Check browser console for errors
 - Verify `@lifi/widget` is installed
 - Check if there are CSP (Content Security Policy) issues in `next.config.ts`
+- The widget uses dynamic import with `ssr: false` to avoid hydration issues
 
-### Wallet Not Connecting
+### Hydration Errors
 
-- Verify wagmi is properly configured
+- The widget component uses `dynamic` import with `ssr: false` to prevent SSR hydration mismatches
+- If you see hydration errors, ensure the widget is only rendered client-side
+- Check that `QueryClient` in `app/providers.tsx` uses the proper SSR-safe singleton pattern
+
+### Widget Too Small
+
+- The widget container is set to `max-w-[600px]` for optimal display
+- You can adjust the container size in `components/LifiWidget.tsx`
+- The widget will automatically size its content
+
+### Wallet Not Connecting (SDK Mode)
+
+- Verify wagmi is properly configured (Step 3)
 - Check that `lib/wagmi.ts` is uncommented
 - Ensure `app/providers.tsx` wraps your app
 - Try a different wallet connector
+- **Note:** Widget mode has its own wallet connection and doesn't need wagmi
 
 ### Chains/Tokens Not Loading
 
@@ -291,7 +299,7 @@ Start with testnets to avoid spending real funds:
 ## Additional Resources
 
 - [Li.Fi Documentation](https://docs.li.fi/)
-- [Li.Fi Widget Docs](https://docs.li.fi/integration-guides/widget-integration)
+- [Li.Fi Widget Docs](https://docs.li.fi/widget/install-widget)
 - [Li.Fi SDK Docs](https://docs.li.fi/integration-guides/sdk-integration)
 - [Wagmi Documentation](https://wagmi.sh/)
 - [Viem Documentation](https://viem.sh/)

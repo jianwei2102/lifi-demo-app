@@ -1,6 +1,6 @@
 "use client";
 
-// STEP 1 & 3: Wallet Hook
+// STEP 3: Wallet Hook
 // This hook provides wallet connection functionality using wagmi
 // TODO: After installing wagmi, uncomment the imports and implementation
 
@@ -16,7 +16,7 @@ export function useWallet() {
   //   address: address,
   // });
 
-  // Placeholder implementation for now
+  // Placeholder
   return {
     address: undefined,
     isConnected: false,

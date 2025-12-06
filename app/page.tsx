@@ -1,13 +1,13 @@
 "use client";
 
-// STEP 1 & 3: Wallet Integration
+// STEP 3: Wallet Integration
 // TODO: After installing wagmi, uncomment the useWallet import and usage
 
 import { useState } from "react";
 import BridgeCard from "@/components/BridgeCard";
 import LifiWidget from "@/components/LifiWidget";
 import IntegrationToggle from "@/components/IntegrationToggle";
-// TODO: Uncomment after installing wagmi
+// TODO: Uncomment after installing wagmi (Step 3)
 // import { useWallet } from "@/hooks/useWallet";
 
 export default function Home() {
@@ -15,8 +15,8 @@ export default function Home() {
     "widget"
   );
 
-  // STEP 1 & 3: Wallet connection
-  // TODO: Uncomment after installing wagmi
+  // STEP 3: Wallet connection
+  // TODO: Uncomment after installing wagmi (Step 3)
   // const { address, isConnected, connect, disconnect, connectors } = useWallet();
 
   return (
@@ -48,28 +48,31 @@ export default function Home() {
             </span>
           </div>
 
-          {/* STEP 1 & 3: Connect Wallet Button */}
-          {/* TODO: Uncomment after installing wagmi */}
-          <button
-            onClick={() => {
-              // TODO: Uncomment after installing wagmi
-              // if (isConnected) {
-              //   disconnect();
-              // } else if (connectors.length > 0) {
-              //   connect({ connector: connectors[0] });
-              // }
-              alert(
-                "Wallet connection will work after installing wagmi. Follow Step 1 in the integration guide."
-              );
-            }}
-            className="px-6 py-2.5 bg-gradient-to-r from-purple-primary to-blue-primary rounded-xl font-semibold hover:scale-105 transition-transform shadow-lg shadow-purple-primary/20"
-          >
-            {/* TODO: Uncomment after installing wagmi */}
-            {/* {isConnected && address
-              ? `${address.slice(0, 6)}...${address.slice(-4)}`
-              : "Connect Wallet"} */}
-            Connect Wallet
-          </button>
+          {/* STEP 3: Connect Wallet Button */}
+          {/* Note: Widget mode has its own wallet connect button, so this is mainly for SDK mode */}
+          {/* TODO: Uncomment after installing wagmi (Step 3) */}
+          {integrationMode === "sdk" && (
+            <button
+              onClick={() => {
+                // TODO: Uncomment after installing wagmi (Step 3)
+                // if (isConnected) {
+                //   disconnect();
+                // } else if (connectors.length > 0) {
+                //   connect({ connector: connectors[0] });
+                // }
+                alert(
+                  "Wallet connection will work after installing wagmi. Follow Step 3 in the integration guide."
+                );
+              }}
+              className="px-6 py-2.5 bg-gradient-to-r from-purple-primary to-blue-primary rounded-xl font-semibold hover:scale-105 transition-transform shadow-lg shadow-purple-primary/20"
+            >
+              {/* TODO: Uncomment after installing wagmi (Step 3) */}
+              {/* {isConnected && address
+                ? `${address.slice(0, 6)}...${address.slice(-4)}`
+                : "Connect Wallet"} */}
+              Connect Wallet
+            </button>
+          )}
         </div>
       </header>
 

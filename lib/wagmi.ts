@@ -1,4 +1,4 @@
-// STEP 1 & 3: Wallet Configuration
+// STEP 3: Wallet Configuration
 // This file sets up wagmi for wallet connections
 // TODO: After installing wagmi and viem, uncomment and configure
 
@@ -38,7 +38,3 @@
 //     [bsc.id]: http(),
 //   },
 // });
-
-// Placeholder for now - will be replaced when wagmi is installed
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-// export const wagmiConfig: any = null;
