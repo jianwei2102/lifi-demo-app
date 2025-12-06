@@ -84,7 +84,7 @@ You can customize the widget theme to match your design by editing the `widgetCo
 
 ```tsx
 const widgetConfig: WidgetConfig = {
-  integrator: "Lifi-demo-tutorial",
+  integrator: "Your integrator name",
   theme: {
     container: {
       border: "none",

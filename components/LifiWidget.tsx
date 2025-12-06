@@ -28,7 +28,7 @@
 
 // TODO: Uncomment after installing @lifi/widget
 // const widgetConfig: WidgetConfig = {
-//   integrator: "Lifi-demo-tutorial",
+//   integrator: "Your integrator name",
 //   theme: {
 //     container: {
 //       border: "none",
