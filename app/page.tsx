@@ -55,7 +55,7 @@ export default function Home() {
               // TODO: Uncomment after installing wagmi
               // if (isConnected) {
               //   disconnect();
-              // } else {
+              // } else if (connectors.length > 0) {
               //   connect({ connector: connectors[0] });
               // }
               alert(
@@ -67,7 +67,7 @@ export default function Home() {
             {/* TODO: Uncomment after installing wagmi */}
             {/* {isConnected && address
               ? `${address.slice(0, 6)}...${address.slice(-4)}`
-              : 'Connect Wallet'} */}
+              : "Connect Wallet"} */}
             Connect Wallet
           </button>
         </div>

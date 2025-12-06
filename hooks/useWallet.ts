@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
 // STEP 1 & 3: Wallet Hook
 // This hook provides wallet connection functionality using wagmi
 // TODO: After installing wagmi, uncomment the imports and implementation
 
-import { useAccount, useConnect, useDisconnect, useBalance } from 'wagmi';
+// TODO: Uncomment after installing wagmi
+// import { useAccount, useConnect, useDisconnect, useBalance } from "wagmi";
 
 export function useWallet() {
   // TODO: Uncomment after installing wagmi
@@ -39,4 +40,3 @@ export function useWallet() {
   //   balance: balance?.formatted,
   // };
 }
-

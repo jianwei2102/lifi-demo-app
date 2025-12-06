@@ -15,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Li.Fi Integration Tutorial - Learn Widget & SDK",
-  description: "Learn how to integrate Li.Fi Widget and SDK into your cross-chain bridge application",
+  description:
+    "Learn how to integrate Li.Fi Widget and SDK into your cross-chain bridge application",
 };
 
 export default function RootLayout({
@@ -28,9 +29,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
