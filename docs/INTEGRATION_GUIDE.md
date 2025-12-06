@@ -38,9 +38,17 @@ yarn add @lifi/widget
 yarn add @lifi/sdk
 ```
 
-### 1.2 Configure WalletConnect (Optional)
+**Why @tanstack/react-query?**
 
-If you want to use WalletConnect, you'll need a project ID:
+- Wagmi uses React Query internally for state management
+- It handles caching, refetching, and synchronization of wallet data
+- It's a required dependency - you don't need to use it directly, wagmi handles it
+
+### 1.2 Configure WalletConnect (Optional - You Can Skip This)
+
+**Note:** WalletConnect is completely optional! The default setup uses `injected()` and `metaMask()` connectors, which work with any browser wallet (MetaMask, Brave, etc.) without any additional configuration.
+
+If you want to use WalletConnect (for mobile wallet connections), you'll need a project ID:
 
 1. Go to [WalletConnect Cloud](https://cloud.walletconnect.com)
 2. Create a new project
@@ -53,12 +61,23 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your-project-id-here
 
 ### 1.3 Enable Wagmi Provider
 
-1. Open `lib/wagmi.ts` and uncomment the wagmi configuration
-2. Open `app/providers.tsx` and uncomment the WagmiProvider setup
-3. Update `app/layout.tsx` to wrap your app with the Providers component:
+1. Open `lib/wagmi.ts` and uncomment the wagmi configuration:
+
+   - Uncomment the imports (`createConfig`, `http`, chains, connectors)
+   - Uncomment the `wagmiConfig` export
+   - Remove or comment out the placeholder export
+
+2. Open `app/providers.tsx` and uncomment the WagmiProvider setup:
+
+   - Uncomment the imports (`WagmiProvider`, `QueryClient`, `QueryClientProvider`)
+   - Uncomment the `queryClient` initialization
+   - Uncomment the return statement with `WagmiProvider` and `QueryClientProvider`
+   - Remove the placeholder return statement
+
+3. Verify `app/layout.tsx` wraps your app with the Providers component (it should already be there):
 
 ```tsx
-import { Providers } from './providers';
+import { Providers } from "./providers";
 
 export default function RootLayout({ children }) {
   return (
@@ -70,6 +89,24 @@ export default function RootLayout({ children }) {
   );
 }
 ```
+
+### 1.4 Enable Wallet Hook
+
+1. Open `hooks/useWallet.ts` and uncomment the wallet hook:
+   - Uncomment the import statement: `import { useAccount, useConnect, useDisconnect, useBalance } from "wagmi";`
+   - Uncomment all the hook calls inside the function
+   - Uncomment the return statement with actual values
+   - Remove the placeholder return statement
+
+### 1.5 Connect Wallet in Main Page
+
+1. Open `app/page.tsx` and uncomment the wallet integration:
+   - Uncomment the import: `import { useWallet } from "@/hooks/useWallet";`
+   - Uncomment the hook call: `const { address, isConnected, connect, disconnect, connectors } = useWallet();`
+   - In the Connect Wallet button's onClick handler, uncomment the connection logic
+   - In the button's content, uncomment the conditional display of address
+
+After completing these steps, your wallet connection should work! Try clicking the "Connect Wallet" button.
 
 ## Step 2: Widget Integration (Simplest)
 
@@ -90,10 +127,10 @@ const widget = new LiFiWidget({
   theme: {
     palette: {
       primary: {
-        main: '#8b5cf6', // Your primary color
+        main: "#8b5cf6", // Your primary color
       },
       secondary: {
-        main: '#3b82f6', // Your secondary color
+        main: "#3b82f6", // Your secondary color
       },
     },
   },
@@ -109,6 +146,7 @@ const widget = new LiFiWidget({
 5. Try bridging a small amount of tokens
 
 The widget handles:
+
 - Chain selection
 - Token selection
 - Quote fetching
@@ -157,15 +195,21 @@ The ChainSelector and TokenSelector components will automatically use real data 
 3. Update the "Connect Wallet" button to use the wallet connection:
 
 ```tsx
-import { useWallet } from '@/hooks/useWallet';
+import { useWallet } from "@/hooks/useWallet";
 
 // In your component:
 const { address, isConnected, connect, disconnect, connectors } = useWallet();
 
 // Update button:
-<button onClick={() => isConnected ? disconnect() : connect({ connector: connectors[0] })}>
-  {isConnected ? `${address?.slice(0, 6)}...${address?.slice(-4)}` : 'Connect Wallet'}
-</button>
+<button
+  onClick={() =>
+    isConnected ? disconnect() : connect({ connector: connectors[0] })
+  }
+>
+  {isConnected
+    ? `${address?.slice(0, 6)}...${address?.slice(-4)}`
+    : "Connect Wallet"}
+</button>;
 ```
 
 ### 3.7 Test SDK Integration
@@ -184,6 +228,7 @@ const { address, isConnected, connect, disconnect, connectors } = useWallet();
 ### Test Scenarios
 
 1. **Widget Mode:**
+
    - Connect wallet
    - Select source and destination chains
    - Select tokens
@@ -202,6 +247,7 @@ const { address, isConnected, connect, disconnect, connectors } = useWallet();
 ### Test Networks
 
 Start with testnets to avoid spending real funds:
+
 - Sepolia (Ethereum testnet)
 - Arbitrum Sepolia
 - Optimism Sepolia
@@ -263,9 +309,8 @@ After completing the integration:
 ## Support
 
 If you encounter issues:
+
 1. Check the troubleshooting section above
 2. Review Li.Fi documentation
 3. Check GitHub issues for known problems
 4. Reach out to Li.Fi support
-
-
