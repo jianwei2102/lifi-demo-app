@@ -18,7 +18,7 @@ A modern, production-ready cross-chain bridge interface built with Next.js, Type
 ## Project Structure
 
 ```
-web3-bridge/
+lifi-bridge-tutorial/
 ├── app/                    # Next.js app directory
 │   ├── layout.tsx         # Root layout with providers
 │   ├── page.tsx           # Main page with toggle
@@ -59,7 +59,7 @@ web3-bridge/
 
 ```bash
 git clone <your-repo-url>
-cd web3-bridge
+cd lifi-bridge-tutorial
 ```
 
 2. **Install dependencies**
@@ -103,11 +103,13 @@ This project is structured with step-by-step integration in mind. All integratio
 ### Quick Integration Overview
 
 1. **Step 1: Installation**
+
    - Install required packages
    - Configure wagmi
    - Enable wallet providers
 
 2. **Step 2: Widget Integration** (5 minutes)
+
    - Uncomment widget code in `components/LifiWidget.tsx`
    - Widget handles everything automatically
 
@@ -186,16 +188,19 @@ Start with testnets to avoid spending real funds:
 ### Common Issues
 
 **Widget not loading**
+
 - Check browser console for errors
 - Verify `@lifi/widget` is installed
 - Check CSP settings in `next.config.ts`
 
 **Wallet not connecting**
+
 - Verify wagmi configuration is uncommented
 - Check that Providers wrap your app
 - Try a different wallet connector
 
 **Chains/tokens not loading**
+
 - Ensure `@lifi/sdk` is installed
 - Verify hooks are uncommented
 - Check network tab for API errors
