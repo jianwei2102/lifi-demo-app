@@ -5,12 +5,13 @@
 // The widget handles all UI and functionality internally
 
 // TODO: After installing @lifi/widget, uncomment the imports and widget code below
-import dynamic from "next/dynamic";
-import { WidgetConfig } from "@lifi/widget";
+// import dynamic from "next/dynamic";
+// import { WidgetConfig } from "@lifi/widget";
 
 // STEP 2: Dynamically import widget to avoid SSR hydration issues
 // This is the recommended approach for Next.js to prevent hydration errors
 // TODO: Uncomment after installing @lifi/widget
+/*
 const LiFiWidget = dynamic(
   () => import("@lifi/widget").then((mod) => mod.LiFiWidget),
   {
@@ -28,7 +29,7 @@ const LiFiWidget = dynamic(
 
 // TODO: Uncomment after installing @lifi/widget
 const widgetConfig: WidgetConfig = {
-  integrator: "Your-integrator-name",
+  integrator: "Your-integrator-name", // Replace with your actual integrator name
   theme: {
     container: {
       border: "none",
@@ -36,6 +37,7 @@ const widgetConfig: WidgetConfig = {
     },
   },
 };
+*/
 
 export default function LifiWidget() {
   return (
@@ -49,7 +51,7 @@ export default function LifiWidget() {
 
         {/* STEP 2: Widget Container */}
         {/* TODO: After installing @lifi/widget, uncomment the widget below */}
-        {/* <div className="min-h-[500px] flex items-center justify-center bg-white/2 border border-white/5 rounded-2xl">
+        <div className="min-h-[500px] flex items-center justify-center bg-white/2 border border-white/5 rounded-2xl">
           <div className="text-center p-8">
             <p className="text-gray-400 mb-4">Li.Fi Widget will appear here</p>
             <p className="text-sm text-gray-500">
@@ -57,11 +59,11 @@ export default function LifiWidget() {
               the widget
             </p>
           </div>
-        </div> */}
-        {/* TODO: Uncomment after installing @lifi/widget */}
-        <div className="w-full">
-          <LiFiWidget integrator="Lifi-demo-tutorial" config={widgetConfig} />
         </div>
+        {/* TODO: Uncomment after installing @lifi/widget */}
+        {/* <div className="w-full">
+          <LiFiWidget integrator="Lifi-demo-tutorial" config={widgetConfig} />
+          </div> */}
       </div>
     </div>
   );

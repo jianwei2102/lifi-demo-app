@@ -14,8 +14,8 @@
 
 // STEP 3.1: Import Li.Fi SDK
 // TODO: Uncomment after installing @lifi/sdk
-import { createConfig, EVM } from "@lifi/sdk";
-import { wagmiConfig } from "@/lib/wagmi";
+// import { createConfig, EVM } from "@lifi/sdk";
+// import { wagmiConfig } from "@/lib/wagmi";
 
 // STEP 3.2: Track if SDK is already configured (prevents duplicate initialization)
 let isConfigured = false;
@@ -27,6 +27,8 @@ export function initializeLiFiSDK() {
     return; // Already configured, skip
   }
 
+  // TODO: Uncomment after installing @lifi/sdk
+  /*
   createConfig({
     // Replace with your actual app/company name (max 23 chars, alphanumeric, hyphens, underscores, dots only)
     integrator: "Your-integrator-name",
@@ -99,12 +101,14 @@ export function initializeLiFiSDK() {
       }),
     ],
   });
+  */
 
   isConfigured = true;
 }
 
 // STEP 3.5: Auto-initialize SDK on client-side
 // TODO: Uncomment after installing @lifi/sdk
+/*
 if (typeof window !== "undefined") {
   try {
     initializeLiFiSDK();
@@ -134,3 +138,4 @@ if (typeof window !== "undefined") {
     }
   });
 }
+*/

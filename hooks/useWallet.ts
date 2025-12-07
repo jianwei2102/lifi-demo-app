@@ -11,11 +11,12 @@
 
 // STEP 2.1: Import wagmi hooks
 // TODO: Uncomment after installing wagmi
-import { useAccount, useConnect, useDisconnect, useBalance } from "wagmi";
+// import { useAccount, useConnect, useDisconnect, useBalance } from "wagmi";
 
 export function useWallet() {
   // STEP 2.2: Use wagmi hooks
   // TODO: Uncomment after installing wagmi
+  /*
   const { address, isConnected, chain } = useAccount();
   const { connect, connectors, isPending } = useConnect();
   const { disconnect } = useDisconnect();
@@ -35,16 +36,17 @@ export function useWallet() {
     disconnect,
     balance: balance?.formatted,
   };
+  */
 
   // Placeholder (for tutorial - comment out when uncommenting above)
-  // return {
-  //   address: undefined,
-  //   isConnected: false,
-  //   chain: undefined,
-  //   connect: () => {},
-  //   connectors: [],
-  //   isPending: false,
-  //   disconnect: () => {},
-  //   balance: undefined,
-  // };
+  return {
+    address: undefined,
+    isConnected: false,
+    chain: undefined,
+    connect: () => {},
+    connectors: [],
+    isPending: false,
+    disconnect: () => {},
+    balance: undefined,
+  };
 }

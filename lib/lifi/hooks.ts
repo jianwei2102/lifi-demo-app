@@ -12,12 +12,12 @@
 
 // STEP 3.1: Import dependencies
 // TODO: Uncomment after installing @lifi/sdk
-import { useState, useEffect, useCallback } from "react";
+// import { useState, useEffect, useCallback } from "react";
 import type { Chain, Token } from "@/lib/mockData";
-import { formatLiFiChain, formatLiFiToken } from "./utils";
-import { initializeLiFiSDK } from "./config";
+// import { formatLiFiChain, formatLiFiToken } from "./utils";
+// import { initializeLiFiSDK } from "./config";
 // Import Li.Fi SDK types
-import type { RouteExtended } from "@lifi/sdk";
+// import type { RouteExtended } from "@lifi/sdk";
 
 // Define Quote type based on Li.Fi SDK structure (Quote type is not exported from SDK)
 type Quote = {
@@ -46,6 +46,8 @@ type Quote = {
 // STEP 3.2: Uncomment this hook to fetch chains from Li.Fi
 // TODO: Uncomment after installing @lifi/sdk
 export function useLiFiChains() {
+  // TODO: Uncomment after installing @lifi/sdk
+  /*
   const [chains, setChains] = useState<Chain[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -61,9 +63,7 @@ export function useLiFiChains() {
 
         // Type assertion needed because ExtendedChain doesn't match Record<string, unknown>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const formattedChains = chainsData.map((chain: any) =>
-          formatLiFiChain(chain)
-        );
+        const formattedChains = chainsData.map((chain: any) => formatLiFiChain(chain));
         setChains(formattedChains);
         setError(null);
       } catch (err) {
@@ -77,6 +77,10 @@ export function useLiFiChains() {
   }, []);
 
   return { chains, loading, error };
+  */
+
+  // Placeholder - returns empty arrays until SDK is integrated
+  return { chains: [], loading: false, error: null };
 }
 
 // ============================================================================
@@ -85,6 +89,8 @@ export function useLiFiChains() {
 // STEP 3.3: Uncomment this hook to fetch tokens for a specific chain
 // TODO: Uncomment after installing @lifi/sdk
 export function useLiFiTokens(chainId?: string) {
+  // TODO: Uncomment after installing @lifi/sdk
+  /*
   const [tokens, setTokens] = useState<Token[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -133,6 +139,10 @@ export function useLiFiTokens(chainId?: string) {
   }, [chainId]);
 
   return { tokens, loading, error };
+  */
+
+  // Placeholder - returns empty arrays until SDK is integrated
+  return { tokens: [], loading: false, error: null };
 }
 
 // ============================================================================
@@ -141,6 +151,8 @@ export function useLiFiTokens(chainId?: string) {
 // STEP 3.4: Uncomment this hook to get quotes for bridge transactions
 // TODO: Uncomment after installing @lifi/sdk
 export function useLiFiQuote() {
+  // TODO: Uncomment after installing @lifi/sdk
+  /*
   const [quote, setQuote] = useState<Quote | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -218,6 +230,12 @@ export function useLiFiQuote() {
   };
 
   return { quote, loading, error, getQuote, clearQuote };
+  */
+
+  // Placeholder - returns empty state until SDK is integrated
+  const clearQuote = () => {};
+  const getQuote = async () => null;
+  return { quote: null, loading: false, error: null, getQuote, clearQuote };
 }
 
 // ============================================================================
@@ -226,6 +244,8 @@ export function useLiFiQuote() {
 // STEP 3.5: Uncomment this hook to execute bridge transactions
 // TODO: Uncomment after installing @lifi/sdk
 export function useLiFiExecute() {
+  // TODO: Uncomment after installing @lifi/sdk
+  /*
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -276,6 +296,15 @@ export function useLiFiExecute() {
   };
 
   return { loading, error, txHash, execute };
+  */
+
+  // Placeholder - returns empty state until SDK is integrated
+  const execute = async () => {
+    throw new Error(
+      "SDK not integrated yet. Please follow Step 3 in the integration guide."
+    );
+  };
+  return { loading: false, error: null, txHash: null, execute };
 }
 
 // ============================================================================
@@ -284,6 +313,8 @@ export function useLiFiExecute() {
 // STEP 3.6: Uncomment this hook to get token balances
 // TODO: Uncomment after installing @lifi/sdk
 export function useLiFiTokenBalance() {
+  // TODO: Uncomment after installing @lifi/sdk
+  /*
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -352,4 +383,9 @@ export function useLiFiTokenBalance() {
   );
 
   return { loading, error, getBalance };
+  */
+
+  // Placeholder - returns empty function until SDK is integrated
+  const getBalance = async () => null;
+  return { loading: false, error: null, getBalance };
 }

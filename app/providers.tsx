@@ -5,13 +5,14 @@
 // TODO: After installing wagmi, uncomment and use this provider
 
 // TODO: Uncomment after installing wagmi
-import { WagmiProvider } from "wagmi";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { wagmiConfig } from "@/lib/wagmi";
+// import { WagmiProvider } from "wagmi";
+// import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// import { wagmiConfig } from "@/lib/wagmi";
 
 // STEP 3: Create QueryClient with proper SSR configuration to avoid hydration errors
 // This pattern prevents the "getServerSnapshot should be cached" error
 // TODO: Uncomment after installing wagmi
+/*
 function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
@@ -36,9 +37,11 @@ function getQueryClient() {
     return browserQueryClient;
   }
 }
+*/
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // TODO: Uncomment after installing wagmi
+  /*
   const queryClient = getQueryClient();
 
   // TODO: Uncomment after installing wagmi
@@ -47,7 +50,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </WagmiProvider>
   );
+  */
 
-  // Placeholder
+  // Placeholder - returns children without providers until wagmi is set up
   return <>{children}</>;
 }

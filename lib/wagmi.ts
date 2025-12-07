@@ -12,21 +12,22 @@
 
 // STEP 2.1: Import wagmi and chains
 // TODO: Uncomment after installing wagmi
-import { createConfig, http } from "wagmi";
-import {
-  mainnet,
-  arbitrum,
-  optimism,
-  polygon,
-  base,
-  avalanche,
-  bsc,
-} from "wagmi/chains";
-import { injected, metaMask } from "wagmi/connectors";
+// import { createConfig, http } from "wagmi";
+// import {
+//   mainnet,
+//   arbitrum,
+//   optimism,
+//   polygon,
+//   base,
+//   avalanche,
+//   bsc,
+// } from "wagmi/chains";
+// import { injected, metaMask } from "wagmi/connectors";
 
 // STEP 2.2: Helper function to get connectors
 // Only initialize MetaMask connector on client side to avoid SSR/build errors
 // TODO: Uncomment after installing wagmi
+/*
 const getConnectors = () => {
   if (typeof window === "undefined") {
     // Server-side: only use injected connector (safer for SSR)
@@ -39,9 +40,11 @@ const getConnectors = () => {
     // walletConnect({ projectId }), // Optional: Uncomment if you want WalletConnect
   ];
 };
+*/
 
 // STEP 2.3: Create wagmi configuration
 // TODO: Uncomment after installing wagmi
+/*
 export const wagmiConfig = createConfig({
   chains: [mainnet, arbitrum, optimism, polygon, base, avalanche, bsc],
   connectors: getConnectors(),
@@ -57,3 +60,7 @@ export const wagmiConfig = createConfig({
   // Disable auto-reconnect to prevent MetaMask popup on refresh
   ssr: false,
 });
+*/
+
+// Placeholder export (for tutorial - comment out when uncommenting above)
+export const wagmiConfig = null as any;
