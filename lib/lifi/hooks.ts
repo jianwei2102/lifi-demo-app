@@ -16,6 +16,29 @@ import { useState, useEffect, useCallback } from "react";
 import type { Chain, Token } from "@/lib/mockData";
 import { formatLiFiChain, formatLiFiToken } from "./utils";
 import { initializeLiFiSDK } from "./config";
+// Import Li.Fi SDK types
+import type { RouteExtended } from "@lifi/sdk";
+
+// Define Quote type based on Li.Fi SDK structure (Quote type is not exported from SDK)
+type Quote = {
+  estimate?: {
+    toAmount?: string;
+    toAmountUSD?: string;
+    fromAmountUSD?: string;
+    gasCosts?: Array<{ amountUSD?: string }>;
+    executionDuration?: number;
+  };
+  action?: {
+    fromToken?: { symbol?: string; decimals?: number };
+    toToken?: { symbol?: string; decimals?: number; logoURI?: string };
+    fromAmount?: string;
+  };
+  toolDetails?: {
+    name?: string;
+    logoURI?: string;
+  };
+  tool?: string;
+};
 
 // ============================================================================
 // Hook 1: Fetch Available Chains
@@ -36,7 +59,11 @@ export function useLiFiChains() {
         const { getChains } = await import("@lifi/sdk");
         const chainsData = await getChains();
 
-        const formattedChains = chainsData.map(formatLiFiChain);
+        // Type assertion needed because ExtendedChain doesn't match Record<string, unknown>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const formattedChains = chainsData.map((chain: any) =>
+          formatLiFiChain(chain)
+        );
         setChains(formattedChains);
         setError(null);
       } catch (err) {
@@ -86,6 +113,8 @@ export function useLiFiTokens(chainId?: string) {
 
         const tokensData = await getTokens({ chains: [chainIdNum] });
         const chainTokens = tokensData.tokens[chainIdNum] || [];
+        // Token type from Li.Fi SDK - using type assertion for flexibility
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const formattedTokens = chainTokens.map((token: any) =>
           formatLiFiToken(token)
         );
@@ -112,7 +141,7 @@ export function useLiFiTokens(chainId?: string) {
 // STEP 3.4: Uncomment this hook to get quotes for bridge transactions
 // TODO: Uncomment after installing @lifi/sdk
 export function useLiFiQuote() {
-  const [quote, setQuote] = useState<any>(null);
+  const [quote, setQuote] = useState<Quote | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -135,7 +164,15 @@ export function useLiFiQuote() {
       setError(null);
       const { getQuote } = await import("@lifi/sdk");
 
-      const quoteParams: any = {
+      const quoteParams: {
+        fromChain: number;
+        toChain: number;
+        fromToken: string;
+        toToken: string;
+        fromAmount: string;
+        slippage: number;
+        fromAddress?: string;
+      } = {
         fromChain: params.fromChain,
         toChain: params.toChain,
         fromToken: params.fromToken,
@@ -149,7 +186,9 @@ export function useLiFiQuote() {
         quoteParams.fromAddress = params.fromAddress;
       }
 
-      const quoteData = await getQuote(quoteParams);
+      // Type assertion needed because fromAddress is optional in our params but required in SDK
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const quoteData = await getQuote(quoteParams as any);
       setQuote(quoteData);
       setError(null);
       return quoteData;
@@ -192,16 +231,17 @@ export function useLiFiExecute() {
   const [txHash, setTxHash] = useState<string | null>(null);
 
   const execute = async (
-    quote: any,
-    updateRouteHook?: (route: any) => void
+    quote: Quote,
+    updateRouteHook?: (route: RouteExtended) => void
   ) => {
     try {
       setLoading(true);
       setError(null);
       const { convertQuoteToRoute, executeRoute } = await import("@lifi/sdk");
 
-      // Convert quote to route
-      const route = await convertQuoteToRoute(quote);
+      // Convert quote to route (quote is compatible with LiFiStep)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const route = await convertQuoteToRoute(quote as any);
 
       // Execute the route
       const result = await executeRoute(route, {

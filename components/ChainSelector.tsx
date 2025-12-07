@@ -58,7 +58,7 @@ export default function ChainSelector({ chains, selectedChain, onSelect, onClose
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search chains..."
-            className="w-full px-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl outline-none focus:border-purple-primary/50 transition-colors placeholder-gray-500"
+            className="w-full px-4 py-3 bg-white/2 border border-white/10 rounded-xl outline-none focus:border-purple-primary/50 transition-colors placeholder-gray-500"
           />
         </div>
 

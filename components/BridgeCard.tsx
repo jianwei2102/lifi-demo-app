@@ -18,6 +18,30 @@ import {
 } from "@/lib/lifi/hooks";
 import { useWallet } from "@/hooks/useWallet";
 import { parseTokenAmount } from "@/lib/lifi/utils";
+// Import Li.Fi SDK types
+import type { RouteExtended, LiFiStepExtended } from "@lifi/sdk";
+
+// Define Quote type based on Li.Fi SDK structure (used for type safety in quoteDetails)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type Quote = {
+  estimate?: {
+    toAmount?: string;
+    toAmountUSD?: string;
+    fromAmountUSD?: string;
+    gasCosts?: Array<{ amountUSD?: string }>;
+    executionDuration?: number;
+  };
+  action?: {
+    fromToken?: { symbol?: string; decimals?: number };
+    toToken?: { symbol?: string; decimals?: number; logoURI?: string };
+    fromAmount?: string;
+  };
+  toolDetails?: {
+    name?: string;
+    logoURI?: string;
+  };
+  tool?: string;
+};
 
 export default function BridgeCard() {
   // Initialize state first before using in hooks
@@ -27,25 +51,18 @@ export default function BridgeCard() {
   const [toToken, setToToken] = useState<Token>(mockTokens[0]);
 
   // STEP 3: Use Li.Fi hooks to fetch real data
-  const {
-    chains: lifiChains,
-    loading: chainsLoading,
-    error: chainsError,
-  } = useLiFiChains();
-  const {
-    tokens: lifiFromTokens,
-    loading: fromTokensLoading,
-    error: fromTokensError,
-  } = useLiFiTokens(fromChain.id);
-  const {
-    tokens: lifiToTokens,
-    loading: toTokensLoading,
-    error: toTokensError,
-  } = useLiFiTokens(toChain.id);
+  const { chains: lifiChains, error: chainsError } = useLiFiChains();
+  const { tokens: lifiFromTokens, error: fromTokensError } = useLiFiTokens(
+    fromChain.id
+  );
+  const { tokens: lifiToTokens, error: toTokensError } = useLiFiTokens(
+    toChain.id
+  );
 
   // Use Li.Fi chains when available, fallback to mock chains
   const availableChains = lifiChains.length > 0 ? lifiChains : mockChains;
-  const availableFromTokens = lifiFromTokens.length > 0 ? lifiFromTokens : mockTokens;
+  const availableFromTokens =
+    lifiFromTokens.length > 0 ? lifiFromTokens : mockTokens;
   const availableToTokens = lifiToTokens.length > 0 ? lifiToTokens : mockTokens;
 
   // Debug logging for chains and tokens
@@ -82,14 +99,20 @@ export default function BridgeCard() {
     fromChain.id,
     toChain.id,
   ]);
-  const { quote, loading: quoteLoading, error: quoteError, getQuote, clearQuote } = useLiFiQuote();
-  const { loading: executeLoading, execute } = useLiFiExecute();
-  const { address, isConnected, chain } = useWallet();
+  const {
+    quote,
+    loading: quoteLoading,
+    error: quoteError,
+    getQuote,
+    clearQuote,
+  } = useLiFiQuote();
+  const { execute } = useLiFiExecute();
+  const { address, isConnected } = useWallet();
   const { getBalance: getTokenBalance } = useLiFiTokenBalance();
 
   // State for token balance
   const [tokenBalance, setTokenBalance] = useState<string>("0.00");
-  
+
   // Tooltip state for transaction notifications
   const [tooltip, setTooltip] = useState<{
     message: string;
@@ -100,10 +123,10 @@ export default function BridgeCard() {
     type: "success",
     visible: false,
   });
-  
+
   // State to trigger balance refresh after transaction
   const [balanceRefreshTrigger, setBalanceRefreshTrigger] = useState(0);
-  
+
   // Refs to prevent duplicate requests and track debounce
   const quoteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isQuoteRequestInProgressRef = useRef<boolean>(false);
@@ -120,19 +143,21 @@ export default function BridgeCard() {
   useEffect(() => {
     if (lifiChains.length > 0) {
       // Check if we're using mock data (string IDs) or if chain ID is not numeric
-      const isUsingMockData = mockChains.some((mc) => mc.id === fromChain.id) || 
-                             isNaN(parseInt(fromChain.id));
-      
+      const isUsingMockData =
+        mockChains.some((mc) => mc.id === fromChain.id) ||
+        isNaN(parseInt(fromChain.id));
+
       if (isUsingMockData) {
         console.log("🔄 Switching from mock chains to Li.Fi chains");
         // Find Ethereum mainnet (chain ID 1) or use first available chain
         const ethereumChain = lifiChains.find((c) => parseInt(c.id) === 1);
         const firstChain = ethereumChain || lifiChains[0];
-        const secondChain = lifiChains.find((c) => parseInt(c.id) === 42161) || // Arbitrum
-                           lifiChains.find((c) => parseInt(c.id) === 8453) || // Base
-                           lifiChains[1] || 
-                           firstChain;
-        
+        const secondChain =
+          lifiChains.find((c) => parseInt(c.id) === 42161) || // Arbitrum
+          lifiChains.find((c) => parseInt(c.id) === 8453) || // Base
+          lifiChains[1] ||
+          firstChain;
+
         setFromChain(firstChain);
         setToChain(secondChain);
       }
@@ -156,9 +181,7 @@ export default function BridgeCard() {
   useEffect(() => {
     if (lifiToTokens.length > 0) {
       // Only update if we're still using mock data or token doesn't match current chain
-      const currentTokenInList = lifiToTokens.find(
-        (t) => t.id === toToken.id
-      );
+      const currentTokenInList = lifiToTokens.find((t) => t.id === toToken.id);
       if (!currentTokenInList) {
         setToToken(lifiToTokens[0]);
       }
@@ -203,19 +226,21 @@ export default function BridgeCard() {
       } catch (error) {
         // Silently handle errors - they're expected if wallet isn't connected or token doesn't exist
         setTokenBalance("0.00");
+        console.log("❌ Error fetching token balance:", error);
       }
     };
 
     fetchBalance();
-   }, [
-     address,
-     isConnected,
-     fromToken?.symbol,
-     fromChain.id,
-     balanceRefreshTrigger, // Trigger refresh after transaction
-     lifiChains.length, // Wait for LiFi chains to load before fetching balance
-     getTokenBalance, // This is now memoized with useCallback, so it's stable
-   ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    address,
+    isConnected,
+    fromToken?.symbol,
+    fromChain.id,
+    balanceRefreshTrigger, // Trigger refresh after transaction
+    lifiChains.length, // Wait for LiFi chains to load before fetching balance
+    getTokenBalance, // This is now memoized with useCallback, so it's stable
+  ]);
 
   // Balance is only fetched when a token is selected (handled in the fetchBalance useEffect above)
 
@@ -252,18 +277,10 @@ export default function BridgeCard() {
       return;
     }
 
-    if (
-      fromChain &&
-      toChain &&
-      fromToken &&
-      toToken &&
-      address
-    ) {
+    if (fromChain && toChain && fromToken && toToken && address) {
       // Get token decimals from token data if available, otherwise use defaults
-      const fromTokenDecimals = 
-        fromToken.symbol === "USDC" || fromToken.symbol === "USDT"
-          ? 6
-          : 18;
+      const fromTokenDecimals =
+        fromToken.symbol === "USDC" || fromToken.symbol === "USDT" ? 6 : 18;
       const fromAmount = parseTokenAmount(amount, fromTokenDecimals);
 
       // Validate chain IDs are numeric before calling getQuote
@@ -276,12 +293,16 @@ export default function BridgeCard() {
       }
 
       // Use token address if available, otherwise use symbol
-      const fromTokenAddress = fromToken.id.startsWith('0x') ? fromToken.id : fromToken.symbol;
-      const toTokenAddress = toToken.id.startsWith('0x') ? toToken.id : toToken.symbol;
+      const fromTokenAddress = fromToken.id.startsWith("0x")
+        ? fromToken.id
+        : fromToken.symbol;
+      const toTokenAddress = toToken.id.startsWith("0x")
+        ? toToken.id
+        : toToken.symbol;
 
       // Create a unique key for this request to prevent duplicates
       const requestKey = `${fromChainId}-${toChainId}-${fromTokenAddress}-${toTokenAddress}-${fromAmount}`;
-      
+
       // Skip if this is the same request as the last one
       if (lastQuoteParamsRef.current === requestKey) {
         return;
@@ -291,7 +312,9 @@ export default function BridgeCard() {
       quoteTimeoutRef.current = setTimeout(async () => {
         // Check if a request is already in progress
         if (isQuoteRequestInProgressRef.current) {
-          console.log("⏭️ [BridgeCard] Quote request already in progress, skipping...");
+          console.log(
+            "⏭️ [BridgeCard] Quote request already in progress, skipping..."
+          );
           return;
         }
 
@@ -318,9 +341,15 @@ export default function BridgeCard() {
           });
         } catch (error: unknown) {
           // Error is already handled by the hook, just log here
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          if (errorMessage.includes('429') || errorMessage.includes('Rate limit')) {
-            console.warn("⚠️ [BridgeCard] Rate limit exceeded. Please wait before trying again.");
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          if (
+            errorMessage.includes("429") ||
+            errorMessage.includes("Rate limit")
+          ) {
+            console.warn(
+              "⚠️ [BridgeCard] Rate limit exceeded. Please wait before trying again."
+            );
           } else {
             console.error("❌ [BridgeCard] Error fetching quote:", error);
           }
@@ -337,6 +366,7 @@ export default function BridgeCard() {
         quoteTimeoutRef.current = null;
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     amount,
     fromChain?.id,
@@ -354,48 +384,74 @@ export default function BridgeCard() {
   // STEP 3: Use real quote data when available
   const formatQuoteAmount = (amount: string, decimals: number = 18): string => {
     const num = parseFloat(amount) / Math.pow(10, decimals);
-    if (num === 0) return '0.00';
-    if (num < 0.000001) return num.toFixed(12).replace(/\.?0+$/, '');
-    if (num < 0.01) return num.toFixed(10).replace(/\.?0+$/, '');
-    if (num < 1) return num.toFixed(8).replace(/\.?0+$/, '');
-    return num.toFixed(6).replace(/\.?0+$/, '');
+    if (num === 0) return "0.00";
+    if (num < 0.000001) return num.toFixed(12).replace(/\.?0+$/, "");
+    if (num < 0.01) return num.toFixed(10).replace(/\.?0+$/, "");
+    if (num < 1) return num.toFixed(8).replace(/\.?0+$/, "");
+    return num.toFixed(6).replace(/\.?0+$/, "");
   };
 
   // Extract quote details
-  const quoteDetails = quote ? {
-    toAmount: quote.estimate?.toAmount ? formatQuoteAmount(
-      quote.estimate.toAmount,
-      quote.action?.toToken?.decimals || 18
-    ) : "0.00",
-    toAmountUSD: quote.estimate?.toAmountUSD || "0.00",
-    fromAmountUSD: quote.estimate?.fromAmountUSD || "0.00",
-    percentageChange: quote.estimate?.fromAmountUSD && quote.estimate?.toAmountUSD
-      ? (((parseFloat(quote.estimate.toAmountUSD) - parseFloat(quote.estimate.fromAmountUSD)) / parseFloat(quote.estimate.fromAmountUSD)) * 100).toFixed(2)
-      : "0.00",
-    bridgeName: quote.toolDetails?.name || quote.tool || "Unknown",
-    bridgeLogo: quote.toolDetails?.logoURI,
-    gasCost: quote.estimate?.gasCosts?.[0]?.amountUSD || "0.00",
-    executionDuration: quote.estimate?.executionDuration || 0,
-    exchangeRate: quote.action?.fromToken && quote.action?.toToken && quote.estimate?.toAmount && quote.action?.fromAmount
-      ? (() => {
-          const fromAmountNum = parseFloat(quote.action.fromAmount) / Math.pow(10, quote.action.fromToken.decimals || 18);
-          const toAmountNum = parseFloat(quote.estimate.toAmount) / Math.pow(10, quote.action.toToken.decimals || 18);
-          const rate = toAmountNum / fromAmountNum;
-          return `1 ${quote.action.fromToken.symbol} ≈ ${rate.toFixed(6)} ${quote.action.toToken.symbol}`;
-        })()
-      : null,
-    toToken: quote.action?.toToken,
-  } : null;
+  const quoteDetails = quote
+    ? {
+        toAmount: quote.estimate?.toAmount
+          ? formatQuoteAmount(
+              quote.estimate.toAmount,
+              quote.action?.toToken?.decimals || 18
+            )
+          : "0.00",
+        toAmountUSD: quote.estimate?.toAmountUSD || "0.00",
+        fromAmountUSD: quote.estimate?.fromAmountUSD || "0.00",
+        percentageChange:
+          quote.estimate?.fromAmountUSD && quote.estimate?.toAmountUSD
+            ? (
+                ((parseFloat(quote.estimate.toAmountUSD) -
+                  parseFloat(quote.estimate.fromAmountUSD)) /
+                  parseFloat(quote.estimate.fromAmountUSD)) *
+                100
+              ).toFixed(2)
+            : "0.00",
+        bridgeName: quote.toolDetails?.name || quote.tool || "Unknown",
+        bridgeLogo: quote.toolDetails?.logoURI,
+        gasCost: quote.estimate?.gasCosts?.[0]?.amountUSD || "0.00",
+        executionDuration: quote.estimate?.executionDuration || 0,
+        exchangeRate:
+          quote.action?.fromToken &&
+          quote.action?.toToken &&
+          quote.estimate?.toAmount &&
+          quote.action?.fromAmount
+            ? (() => {
+                const fromAmountNum =
+                  parseFloat(quote.action.fromAmount) /
+                  Math.pow(10, quote.action.fromToken.decimals || 18);
+                const toAmountNum =
+                  parseFloat(quote.estimate.toAmount) /
+                  Math.pow(10, quote.action.toToken.decimals || 18);
+                const rate = toAmountNum / fromAmountNum;
+                return `1 ${quote.action.fromToken.symbol} ≈ ${rate.toFixed(
+                  6
+                )} ${quote.action.toToken.symbol}`;
+              })()
+            : null,
+        toToken: quote.action?.toToken,
+      }
+    : null;
 
   // Helper function to show tooltip
-  const showTooltip = (message: string, type: "loading" | "success" | "error") => {
+  const showTooltip = (
+    message: string,
+    type: "loading" | "success" | "error"
+  ) => {
     setTooltip({ message, type, visible: true });
-    
+
     // Auto-hide tooltip after delay (except for loading)
     if (type !== "loading") {
-      setTimeout(() => {
-        setTooltip((prev) => ({ ...prev, visible: false }));
-      }, type === "success" ? 5000 : 4000);
+      setTimeout(
+        () => {
+          setTooltip((prev) => ({ ...prev, visible: false }));
+        },
+        type === "success" ? 5000 : 4000
+      );
     }
   };
 
@@ -430,17 +486,17 @@ export default function BridgeCard() {
     try {
       // Show loading tooltip
       showTooltip("Transaction in progress...", "loading");
-      
+
       // Execute route with progress tracking
-      const progressCallback = (updatedRoute: any) => {
+      const progressCallback = (updatedRoute: RouteExtended) => {
         // Progress callback - can be used to show transaction status
         console.log("🔄 Route update:", updatedRoute);
-        
+
         // Track all steps and their status
-        updatedRoute.steps?.forEach((step: any, index: number) => {
+        updatedRoute.steps?.forEach((step: LiFiStepExtended, index: number) => {
           const stepStatus = step.execution?.status;
           const process = step.execution?.process;
-          
+
           if (process && process.length > 0) {
             const latestProcess = process[process.length - 1];
             console.log(`📊 Step ${index + 1} (${step.type}):`, {
@@ -450,10 +506,13 @@ export default function BridgeCard() {
               txHash: latestProcess.txHash,
               txLink: latestProcess.txLink,
             });
-            
+
             // Show transaction hash when available
             if (latestProcess.txHash) {
-              console.log(`✅ Transaction hash for step ${index + 1}:`, latestProcess.txHash);
+              console.log(
+                `✅ Transaction hash for step ${index + 1}:`,
+                latestProcess.txHash
+              );
               if (latestProcess.txLink) {
                 console.log(`🔗 Explorer link:`, latestProcess.txLink);
               }
@@ -464,33 +523,41 @@ export default function BridgeCard() {
 
       console.log("🚀 Starting bridge execution...");
       const result = await execute(quote, progressCallback);
-      
+
       // Hide loading tooltip
       setTooltip((prev) => ({ ...prev, visible: false }));
-      
+
       // Check if execution was successful
       if (result) {
-        const allStepsDone = result.steps?.every((step: any) => 
-          step.execution?.status === "DONE" || step.execution?.status === "FAILED"
-        );
-        
-        if (allStepsDone) {
-          const hasFailures = result.steps?.some((step: any) => 
+        const allStepsDone = result.steps?.every(
+          (step: LiFiStepExtended) =>
+            step.execution?.status === "DONE" ||
             step.execution?.status === "FAILED"
+        );
+
+        if (allStepsDone) {
+          const hasFailures = result.steps?.some(
+            (step: LiFiStepExtended) => step.execution?.status === "FAILED"
           );
-          
+
           if (hasFailures) {
-            showTooltip("Transaction completed with some failures. Check console for details.", "error");
+            showTooltip(
+              "Transaction completed with some failures. Check console for details.",
+              "error"
+            );
           } else {
             // Success! Show tooltip, reset amount, and refresh balance
-            showTooltip("Transaction successful! Balance will update shortly.", "success");
-            
+            showTooltip(
+              "Transaction successful! Balance will update shortly.",
+              "success"
+            );
+
             // Reset amount input
             setAmount("");
-            
+
             // Clear quote
             clearQuote();
-            
+
             // Trigger balance refresh after transaction is confirmed (3 seconds delay)
             setTimeout(() => {
               // Trigger balance refresh by updating the trigger state
@@ -504,13 +571,14 @@ export default function BridgeCard() {
     } catch (error: unknown) {
       // Hide loading tooltip
       setTooltip((prev) => ({ ...prev, visible: false }));
-      
-      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       const errorName = error instanceof Error ? error.name : "";
-      
+
       // Handle user rejection silently (just log, don't show error)
       if (
-        errorMessage.includes("user rejected") || 
+        errorMessage.includes("user rejected") ||
         errorMessage.includes("User rejected") ||
         errorMessage.includes("User rejected the request") ||
         errorName.includes("UserRejectedRequestError")
@@ -518,7 +586,7 @@ export default function BridgeCard() {
         console.log("ℹ️ User rejected the transaction request");
         return; // Don't show error tooltip for user rejection
       }
-      
+
       // Handle balance too low error
       if (
         errorMessage.includes("balance is too low") ||
@@ -529,14 +597,23 @@ export default function BridgeCard() {
         showTooltip("Insufficient balance for this transaction", "error");
         return;
       }
-      
+
       console.error("❌ Bridge error:", error);
-      
+
       // Provide more specific error messages for other errors
-      if (errorMessage.includes("insufficient funds") || errorMessage.includes("Insufficient")) {
+      if (
+        errorMessage.includes("insufficient funds") ||
+        errorMessage.includes("Insufficient")
+      ) {
         showTooltip("Insufficient funds for this transaction", "error");
-      } else if (errorMessage.includes("not connected") || errorMessage.includes("Wallet is not connected")) {
-        showTooltip("Wallet is not connected. Please connect your wallet first", "error");
+      } else if (
+        errorMessage.includes("not connected") ||
+        errorMessage.includes("Wallet is not connected")
+      ) {
+        showTooltip(
+          "Wallet is not connected. Please connect your wallet first",
+          "error"
+        );
       } else {
         // Only show generic error if it's not a user rejection
         showTooltip(`Transaction failed: ${errorMessage}`, "error");
@@ -550,7 +627,7 @@ export default function BridgeCard() {
       <div className="backdrop-blur-xl bg-card-bg border border-card-border rounded-3xl p-6 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-primary to-blue-primary bg-clip-text text-transparent">
+          <h2 className="text-2xl font-bold bg-linear-to-r from-purple-primary to-blue-primary bg-clip-text text-transparent">
             Bridge Assets
           </h2>
           <button className="p-2 hover:bg-white/5 rounded-xl transition-colors">
@@ -578,7 +655,7 @@ export default function BridgeCard() {
 
         {/* From Section */}
         <div className="space-y-4">
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
+          <div className="bg-white/2 border border-white/5 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-gray-400">From</span>
               <span className="text-xs text-gray-500">
@@ -615,28 +692,32 @@ export default function BridgeCard() {
                 }}
                 className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors border border-white/10"
               >
-              {/* Chain Icon - Use image if available, otherwise use emoji */}
-              <div className="relative w-6 h-6 flex items-center justify-center">
-                {fromChain.logoURI ? (
-                  <img 
-                    src={fromChain.logoURI} 
-                    alt={fromChain.name}
-                    className="w-6 h-6 rounded-full"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const fallback = target.parentElement?.querySelector('.chain-fallback') as HTMLElement;
-                      if (fallback) fallback.style.display = 'block';
-                    }}
-                  />
-                ) : null}
-                <span 
-                  className={`text-xl chain-fallback ${fromChain.logoURI ? 'hidden' : 'block'}`}
-                >
-                  {fromChain.icon}
-                </span>
-              </div>
-              <span className="font-medium">{fromChain.name}</span>
+                {/* Chain Icon - Use image if available, otherwise use emoji */}
+                <div className="relative w-6 h-6 flex items-center justify-center">
+                  {fromChain.logoURI ? (
+                    <img
+                      src={fromChain.logoURI}
+                      alt={fromChain.name}
+                      className="w-6 h-6 rounded-full"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                        const fallback = target.parentElement?.querySelector(
+                          ".chain-fallback"
+                        ) as HTMLElement;
+                        if (fallback) fallback.style.display = "block";
+                      }}
+                    />
+                  ) : null}
+                  <span
+                    className={`text-xl chain-fallback ${
+                      fromChain.logoURI ? "hidden" : "block"
+                    }`}
+                  >
+                    {fromChain.icon}
+                  </span>
+                </div>
+                <span className="font-medium">{fromChain.name}</span>
                 <svg
                   className="w-4 h-4 text-gray-400"
                   fill="none"
@@ -665,21 +746,25 @@ export default function BridgeCard() {
                 {/* Token Icon - Use image if available, otherwise use emoji */}
                 <div className="relative w-6 h-6 flex items-center justify-center">
                   {fromToken.logoURI ? (
-                    <img 
-                      src={fromToken.logoURI} 
+                    <img
+                      src={fromToken.logoURI}
                       alt={fromToken.symbol}
                       className="w-6 h-6 rounded-full"
                       onError={(e) => {
                         // Fallback to emoji if image fails to load
                         const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const fallback = target.parentElement?.querySelector('.token-fallback') as HTMLElement;
-                        if (fallback) fallback.style.display = 'block';
+                        target.style.display = "none";
+                        const fallback = target.parentElement?.querySelector(
+                          ".token-fallback"
+                        ) as HTMLElement;
+                        if (fallback) fallback.style.display = "block";
                       }}
                     />
                   ) : null}
-                  <span 
-                    className={`text-xl token-fallback ${fromToken.logoURI ? 'hidden' : 'block'}`}
+                  <span
+                    className={`text-xl token-fallback ${
+                      fromToken.logoURI ? "hidden" : "block"
+                    }`}
                   >
                     {fromToken.icon}
                   </span>
@@ -724,7 +809,7 @@ export default function BridgeCard() {
           <div className="flex justify-center -my-2 relative z-10">
             <button
               onClick={handleSwapChains}
-              className="p-3 bg-gradient-to-r from-purple-primary to-blue-primary rounded-xl hover:scale-110 transition-transform shadow-lg"
+              className="p-3 bg-linear-to-r from-purple-primary to-blue-primary rounded-xl hover:scale-110 transition-transform shadow-lg"
             >
               <svg
                 className="w-5 h-5"
@@ -743,7 +828,7 @@ export default function BridgeCard() {
           </div>
 
           {/* To Section */}
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
+          <div className="bg-white/2 border border-white/5 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-gray-400">To</span>
               {quoteDetails && (
@@ -767,20 +852,24 @@ export default function BridgeCard() {
                 {/* Chain Icon - Use image if available, otherwise use emoji */}
                 <div className="relative w-6 h-6 flex items-center justify-center">
                   {toChain.logoURI ? (
-                    <img 
-                      src={toChain.logoURI} 
+                    <img
+                      src={toChain.logoURI}
                       alt={toChain.name}
                       className="w-6 h-6 rounded-full"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const fallback = target.parentElement?.querySelector('.chain-fallback') as HTMLElement;
-                        if (fallback) fallback.style.display = 'block';
+                        target.style.display = "none";
+                        const fallback = target.parentElement?.querySelector(
+                          ".chain-fallback"
+                        ) as HTMLElement;
+                        if (fallback) fallback.style.display = "block";
                       }}
                     />
                   ) : null}
-                  <span 
-                    className={`text-xl chain-fallback ${toChain.logoURI ? 'hidden' : 'block'}`}
+                  <span
+                    className={`text-xl chain-fallback ${
+                      toChain.logoURI ? "hidden" : "block"
+                    }`}
                   >
                     {toChain.icon}
                   </span>
@@ -813,26 +902,34 @@ export default function BridgeCard() {
               >
                 {/* Token Icon - Use image if available, otherwise use emoji */}
                 <div className="relative w-6 h-6 flex items-center justify-center">
-                  {(quoteDetails?.toToken?.logoURI || toToken.logoURI) ? (
-                    <img 
-                      src={quoteDetails?.toToken?.logoURI || toToken.logoURI} 
+                  {quoteDetails?.toToken?.logoURI || toToken.logoURI ? (
+                    <img
+                      src={quoteDetails?.toToken?.logoURI || toToken.logoURI}
                       alt={quoteDetails?.toToken?.symbol || toToken.symbol}
                       className="w-6 h-6 rounded-full"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const fallback = target.parentElement?.querySelector('.token-fallback') as HTMLElement;
-                        if (fallback) fallback.style.display = 'block';
+                        target.style.display = "none";
+                        const fallback = target.parentElement?.querySelector(
+                          ".token-fallback"
+                        ) as HTMLElement;
+                        if (fallback) fallback.style.display = "block";
                       }}
                     />
                   ) : null}
-                  <span 
-                    className={`text-xl token-fallback ${(quoteDetails?.toToken?.logoURI || toToken.logoURI) ? 'hidden' : 'block'}`}
+                  <span
+                    className={`text-xl token-fallback ${
+                      quoteDetails?.toToken?.logoURI || toToken.logoURI
+                        ? "hidden"
+                        : "block"
+                    }`}
                   >
                     {toToken.icon}
                   </span>
                 </div>
-                <span className="font-medium">{quoteDetails?.toToken?.symbol || toToken.symbol}</span>
+                <span className="font-medium">
+                  {quoteDetails?.toToken?.symbol || toToken.symbol}
+                </span>
                 <svg
                   className="w-4 h-4 text-gray-400"
                   fill="none"
@@ -855,17 +952,24 @@ export default function BridgeCard() {
             ) : quoteError ? (
               <div className="flex flex-col gap-1 py-4">
                 <span className="text-sm text-red-400">
-                  {quoteError.message.includes('429') || quoteError.message.includes('Rate limit')
-                    ? 'Rate limit exceeded. Please wait.'
-                    : quoteError.message.includes('404') || quoteError.message.includes('No available quotes')
-                    ? 'No quotes available for this route'
-                    : 'Error fetching quote'}
+                  {quoteError.message.includes("429") ||
+                  quoteError.message.includes("Rate limit")
+                    ? "Rate limit exceeded. Please wait."
+                    : quoteError.message.includes("404") ||
+                      quoteError.message.includes("No available quotes")
+                    ? "No quotes available for this route"
+                    : "Error fetching quote"}
                 </span>
-                {quoteError.message.includes('429') && (
-                  <span className="text-xs text-gray-500">Try again in a few minutes</span>
+                {quoteError.message.includes("429") && (
+                  <span className="text-xs text-gray-500">
+                    Try again in a few minutes
+                  </span>
                 )}
-                {(quoteError.message.includes('404') || quoteError.message.includes('No available quotes')) && (
-                  <span className="text-xs text-gray-500">Try a different token or chain combination</span>
+                {(quoteError.message.includes("404") ||
+                  quoteError.message.includes("No available quotes")) && (
+                  <span className="text-xs text-gray-500">
+                    Try a different token or chain combination
+                  </span>
                 )}
               </div>
             ) : quoteDetails ? (
@@ -874,20 +978,24 @@ export default function BridgeCard() {
                 <div className="flex items-start gap-3">
                   <div className="relative w-10 h-10 flex items-center justify-center flex-shrink-0">
                     {quoteDetails.toToken?.logoURI ? (
-                      <img 
-                        src={quoteDetails.toToken.logoURI} 
+                      <img
+                        src={quoteDetails.toToken.logoURI}
                         alt={quoteDetails.toToken.symbol}
                         className="w-10 h-10 rounded-full"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const fallback = target.parentElement?.querySelector('.quote-token-fallback') as HTMLElement;
-                          if (fallback) fallback.style.display = 'block';
+                          target.style.display = "none";
+                          const fallback = target.parentElement?.querySelector(
+                            ".quote-token-fallback"
+                          ) as HTMLElement;
+                          if (fallback) fallback.style.display = "block";
                         }}
                       />
                     ) : null}
-                    <span 
-                      className={`text-2xl quote-token-fallback ${quoteDetails.toToken?.logoURI ? 'hidden' : 'block'}`}
+                    <span
+                      className={`text-2xl quote-token-fallback ${
+                        quoteDetails.toToken?.logoURI ? "hidden" : "block"
+                      }`}
                     >
                       {toToken.icon}
                     </span>
@@ -901,10 +1009,17 @@ export default function BridgeCard() {
                         ${parseFloat(quoteDetails.toAmountUSD).toFixed(2)}
                       </span>
                       {parseFloat(quoteDetails.percentageChange) !== 0 && (
-                        <span className={`text-xs font-medium ${
-                          parseFloat(quoteDetails.percentageChange) >= 0 ? 'text-green-400' : 'text-red-400'
-                        }`}>
-                          {parseFloat(quoteDetails.percentageChange) >= 0 ? '+' : ''}{quoteDetails.percentageChange}%
+                        <span
+                          className={`text-xs font-medium ${
+                            parseFloat(quoteDetails.percentageChange) >= 0
+                              ? "text-green-400"
+                              : "text-red-400"
+                          }`}
+                        >
+                          {parseFloat(quoteDetails.percentageChange) >= 0
+                            ? "+"
+                            : ""}
+                          {quoteDetails.percentageChange}%
                         </span>
                       )}
                     </div>
@@ -915,17 +1030,27 @@ export default function BridgeCard() {
                 {quoteDetails.bridgeName && (
                   <div className="flex items-center gap-2 text-xs text-gray-400">
                     {quoteDetails.bridgeLogo ? (
-                      <img 
-                        src={quoteDetails.bridgeLogo} 
+                      <img
+                        src={quoteDetails.bridgeLogo}
                         alt={quoteDetails.bridgeName}
                         className="w-4 h-4 rounded"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
+                          (e.target as HTMLImageElement).style.display = "none";
                         }}
                       />
                     ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 10V3L4 14h7v7l9-11h-7z"
+                        />
                       </svg>
                     )}
                     <span>{quoteDetails.bridgeName}</span>
@@ -934,18 +1059,41 @@ export default function BridgeCard() {
 
                 {/* Additional Info */}
                 <div className="flex items-center gap-4 text-xs text-gray-500 pt-2 border-t border-white/5">
-                  {quoteDetails.gasCost && parseFloat(quoteDetails.gasCost) > 0 && (
-                    <div className="flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      <span>&lt;${parseFloat(quoteDetails.gasCost).toFixed(2)}</span>
-                    </div>
-                  )}
+                  {quoteDetails.gasCost &&
+                    parseFloat(quoteDetails.gasCost) > 0 && (
+                      <div className="flex items-center gap-1">
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                          />
+                        </svg>
+                        <span>
+                          &lt;${parseFloat(quoteDetails.gasCost).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
                   {quoteDetails.executionDuration > 0 && (
                     <div className="flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                       <span>{quoteDetails.executionDuration}s</span>
                     </div>
@@ -958,26 +1106,27 @@ export default function BridgeCard() {
                 </div>
               </div>
             ) : (
-              <div className="text-3xl font-semibold text-gray-400 py-4">0.00</div>
+              <div className="text-3xl font-semibold text-gray-400 py-4">
+                0.00
+              </div>
             )}
           </div>
         </div>
-
 
         {/* Bridge Button */}
         {/* STEP 3: Update button to use handleBridge function after SDK integration */}
         <button
           disabled={
-            !amount || 
-            parseFloat(amount) === 0 || 
-            !isBalanceSufficient() || 
-            !quote || 
+            !amount ||
+            parseFloat(amount) === 0 ||
+            !isBalanceSufficient() ||
+            !quote ||
             !isConnected
           }
           onClick={() => {
             handleBridge();
           }}
-          className="w-full mt-6 py-4 bg-gradient-to-r from-purple-primary to-blue-primary rounded-xl font-semibold text-lg hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-purple-primary/20"
+          className="w-full mt-6 py-4 bg-linear-to-r from-purple-primary to-blue-primary rounded-xl font-semibold text-lg hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-purple-primary/20"
         >
           {!isConnected
             ? "Connect Wallet"

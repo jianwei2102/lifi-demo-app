@@ -28,7 +28,7 @@ const LiFiWidget = dynamic(
 
 // TODO: Uncomment after installing @lifi/widget
 const widgetConfig: WidgetConfig = {
-  integrator: "Your integrator name",
+  integrator: "Your-integrator-name",
   theme: {
     container: {
       border: "none",
@@ -42,14 +42,14 @@ export default function LifiWidget() {
     <div className="w-full max-w-[600px] mx-auto">
       <div className="backdrop-blur-xl bg-card-bg border border-card-border rounded-3xl p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-primary to-blue-primary bg-clip-text text-transparent">
+          <h2 className="text-2xl font-bold bg-linear-to-r from-purple-primary to-blue-primary bg-clip-text text-transparent">
             Bridge Assets
           </h2>
         </div>
 
         {/* STEP 2: Widget Container */}
         {/* TODO: After installing @lifi/widget, uncomment the widget below */}
-        {/* <div className="min-h-[500px] flex items-center justify-center bg-white/[0.02] border border-white/5 rounded-2xl">
+        {/* <div className="min-h-[500px] flex items-center justify-center bg-white/2 border border-white/5 rounded-2xl">
           <div className="text-center p-8">
             <p className="text-gray-400 mb-4">Li.Fi Widget will appear here</p>
             <p className="text-sm text-gray-500">

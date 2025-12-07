@@ -58,6 +58,7 @@ export default function Home() {
       }, 100);
       return () => clearTimeout(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
   return (
@@ -74,17 +75,17 @@ export default function Home() {
         <div className="absolute bottom-0 left-1/3 w-[550px] h-[550px] bg-purple-secondary/20 rounded-full blur-[140px] animate-pulse [animation-delay:2s]" />
 
         {/* Subtle grid overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.03)_1px,transparent_1px)] bg-[size:100px_100px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.03)_1px,transparent_1px)] bg-size-[100px_100px]" />
       </div>
 
       {/* Header */}
       <header className="relative z-10 px-6 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-primary to-blue-primary rounded-xl flex items-center justify-center font-bold text-xl">
+            <div className="w-10 h-10 bg-linear-to-br from-purple-primary to-blue-primary rounded-xl flex items-center justify-center font-bold text-xl">
               ⚡
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-primary to-blue-primary bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-linear-to-r from-purple-primary to-blue-primary bg-clip-text text-transparent">
               Li.Fi Bridge
             </span>
           </div>
@@ -107,7 +108,7 @@ export default function Home() {
                   );
                 }
               }}
-              className="px-6 py-2.5 bg-gradient-to-r from-purple-primary to-blue-primary rounded-xl font-semibold hover:scale-105 transition-transform shadow-lg shadow-purple-primary/20"
+              className="px-6 py-2.5 bg-linear-to-r from-purple-primary to-blue-primary rounded-xl font-semibold hover:scale-105 transition-transform shadow-lg shadow-purple-primary/20"
             >
               {/* TODO: Uncomment after installing wagmi (Step 3) */}
               {isConnected && address
@@ -124,7 +125,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-12">
-            <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-white via-purple-secondary to-blue-secondary bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-linear-to-r from-white via-purple-secondary to-blue-secondary bg-clip-text text-transparent">
               Bridge Assets Across Chains
             </h1>
             <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-6">

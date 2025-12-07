@@ -84,7 +84,7 @@ You can customize the widget theme to match your design by editing the `widgetCo
 
 ```tsx
 const widgetConfig: WidgetConfig = {
-  integrator: "Your integrator name",
+  integrator: "Your-integrator-name", // Replace with your actual integrator name
   theme: {
     container: {
       border: "none",
