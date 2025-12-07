@@ -8,7 +8,7 @@ import BridgeCard from "@/components/BridgeCard";
 import LifiWidget from "@/components/LifiWidget";
 import IntegrationToggle from "@/components/IntegrationToggle";
 // TODO: Uncomment after installing wagmi (Step 3)
-import { useWallet } from "@/hooks/useWallet";
+// import { useWallet } from "@/hooks/useWallet";
 
 export default function Home() {
   const [integrationMode, setIntegrationMode] = useState<"widget" | "sdk">(
@@ -17,7 +17,7 @@ export default function Home() {
 
   // STEP 3: Wallet connection
   // TODO: Uncomment after installing wagmi (Step 3)
-  const { address, isConnected, connect, disconnect, connectors } = useWallet();
+  // const { address, isConnected, connect, disconnect, connectors } = useWallet();
 
   // Tooltip state for notifications
   const [tooltip, setTooltip] = useState<{
@@ -48,7 +48,9 @@ export default function Home() {
     }
   };
 
-  // Disconnect wallet on page refresh/load to prevent MetaMask popup
+  // STEP 3: Disconnect wallet on page refresh/load to prevent MetaMask popup
+  // TODO: Uncomment after installing wagmi (Step 3)
+  /*
   useEffect(() => {
     // Only disconnect if connected (to prevent unnecessary calls)
     if (isConnected) {
@@ -60,6 +62,7 @@ export default function Home() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
+  */
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -93,6 +96,7 @@ export default function Home() {
           {/* STEP 3: Connect Wallet Button */}
           {/* Note: Widget mode has its own wallet connect button, so this is mainly for SDK mode */}
           {/* TODO: Uncomment after installing wagmi (Step 3) */}
+          {/*
           {integrationMode === "sdk" && (
             <button
               onClick={() => {
@@ -110,13 +114,12 @@ export default function Home() {
               }}
               className="px-6 py-2.5 bg-linear-to-r from-purple-primary to-blue-primary rounded-xl font-semibold hover:scale-105 transition-transform shadow-lg shadow-purple-primary/20"
             >
-              {/* TODO: Uncomment after installing wagmi (Step 3) */}
               {isConnected && address
                 ? `${address.slice(0, 6)}...${address.slice(-4)}`
                 : "Connect Wallet"}
-              {/* Connect Wallet */}
             </button>
           )}
+          */}
         </div>
       </header>
 
