@@ -6,21 +6,26 @@ import type { Chain, Token } from '@/lib/mockData';
 // Convert Li.Fi chain format to our Chain interface
 export function formatLiFiChain(lifiChain: any): Chain {
   return {
-    id: lifiChain.id.toString(),
+    id: lifiChain.id.toString(), // Store as string for compatibility, but keep numeric ID accessible
     name: lifiChain.name,
     icon: getChainIcon(lifiChain.id),
     color: lifiChain.metadata?.color || '#627EEA',
+    logoURI: lifiChain.logoURI || lifiChain.metadata?.logoURI, // Include chain image URL from LiFi
   };
 }
 
 // Convert Li.Fi token format to our Token interface
 export function formatLiFiToken(lifiToken: any, balance?: string): Token {
+  // Use address as ID to ensure uniqueness (multiple tokens can have same symbol)
+  const tokenId = lifiToken.address?.toLowerCase() || lifiToken.symbol || 'unknown';
+  
   return {
-    id: lifiToken.address.toLowerCase(),
+    id: tokenId,
     symbol: lifiToken.symbol,
     name: lifiToken.name,
     icon: getTokenIcon(lifiToken.symbol),
     balance: balance || '0.00',
+    logoURI: lifiToken.logoURI, // Include token image URL from LiFi
   };
 }
 
@@ -53,10 +58,26 @@ function getTokenIcon(symbol: string): string {
   return iconMap[symbol.toUpperCase()] || '●';
 }
 
-// Format token amount for display
+// Format token amount for display with higher precision for small amounts
 export function formatTokenAmount(amount: string, decimals: number = 18): string {
   const num = parseFloat(amount) / Math.pow(10, decimals);
-  return num.toFixed(6);
+  
+  // Use more decimal places for small amounts
+  if (num === 0) {
+    return '0.00';
+  } else if (num < 0.000001) {
+    // For very small amounts, show up to 12 decimal places
+    return num.toFixed(12).replace(/\.?0+$/, ''); // Remove trailing zeros
+  } else if (num < 0.01) {
+    // For small amounts, show up to 10 decimal places
+    return num.toFixed(10).replace(/\.?0+$/, ''); // Remove trailing zeros
+  } else if (num < 1) {
+    // For amounts less than 1, show up to 8 decimal places
+    return num.toFixed(8).replace(/\.?0+$/, ''); // Remove trailing zeros
+  } else {
+    // For larger amounts, show 6 decimal places
+    return num.toFixed(6).replace(/\.?0+$/, ''); // Remove trailing zeros
+  }
 }
 
 // Parse token amount from display format

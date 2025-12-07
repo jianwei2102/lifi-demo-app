@@ -181,13 +181,21 @@ The SDK approach gives you full control over the UI while using Li.Fi's routing 
 ### 4.1 Enable Li.Fi SDK Configuration
 
 1. Open `lib/lifi/config.ts`
-2. Uncomment the Li.Fi SDK initialization
-3. Replace `'your-app-name'` with your actual app name
+2. The SDK v3 configuration is already set up using `createConfig` from `@lifi/sdk`
+3. Replace integrator with your actual app name
+4. Optionally add an API key for higher rate limits: `apiKey: process.env.NEXT_PUBLIC_LIFI_API_KEY`
+5. Optionally configure custom RPC URLs for better reliability
+
+**Note:** SDK v3 uses `createConfig()` instead of instantiating a class. The configuration is global and doesn't need to be exported.
 
 ### 4.2 Enable Li.Fi Hooks
 
 1. Open `lib/lifi/hooks.ts`
-2. Uncomment all the hook implementations
+2. The hooks are already implemented using SDK v3 methods:
+   - `getChains()` - fetches available chains
+   - `getTokens()` - fetches tokens for a chain
+   - `getQuote()` - gets bridge quotes
+   - `executeRoute()` - executes bridge transactions
 3. The hooks will now fetch real data from Li.Fi
 
 ### 4.3 Update BridgeCard Component

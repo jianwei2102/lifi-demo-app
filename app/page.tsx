@@ -3,12 +3,12 @@
 // STEP 3: Wallet Integration
 // TODO: After installing wagmi, uncomment the useWallet import and usage
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BridgeCard from "@/components/BridgeCard";
 import LifiWidget from "@/components/LifiWidget";
 import IntegrationToggle from "@/components/IntegrationToggle";
 // TODO: Uncomment after installing wagmi (Step 3)
-// import { useWallet } from "@/hooks/useWallet";
+import { useWallet } from "@/hooks/useWallet";
 
 export default function Home() {
   const [integrationMode, setIntegrationMode] = useState<"widget" | "sdk">(
@@ -17,7 +17,48 @@ export default function Home() {
 
   // STEP 3: Wallet connection
   // TODO: Uncomment after installing wagmi (Step 3)
-  // const { address, isConnected, connect, disconnect, connectors } = useWallet();
+  const { address, isConnected, connect, disconnect, connectors } = useWallet();
+
+  // Tooltip state for notifications
+  const [tooltip, setTooltip] = useState<{
+    message: string;
+    type: "loading" | "success" | "error";
+    visible: boolean;
+  }>({
+    message: "",
+    type: "success",
+    visible: false,
+  });
+
+  // Helper function to show tooltip
+  const showTooltip = (
+    message: string,
+    type: "loading" | "success" | "error"
+  ) => {
+    setTooltip({ message, type, visible: true });
+
+    // Auto-hide tooltip after delay (except for loading)
+    if (type !== "loading") {
+      setTimeout(
+        () => {
+          setTooltip((prev) => ({ ...prev, visible: false }));
+        },
+        type === "success" ? 5000 : 4000
+      );
+    }
+  };
+
+  // Disconnect wallet on page refresh/load to prevent MetaMask popup
+  useEffect(() => {
+    // Only disconnect if connected (to prevent unnecessary calls)
+    if (isConnected) {
+      // Small delay to ensure everything is initialized
+      const timer = setTimeout(() => {
+        disconnect();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, []); // Only run on mount
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -55,22 +96,24 @@ export default function Home() {
             <button
               onClick={() => {
                 // TODO: Uncomment after installing wagmi (Step 3)
-                // if (isConnected) {
-                //   disconnect();
-                // } else if (connectors.length > 0) {
-                //   connect({ connector: connectors[0] });
-                // }
-                alert(
-                  "Wallet connection will work after installing wagmi. Follow Step 3 in the integration guide."
-                );
+                if (isConnected) {
+                  disconnect();
+                } else if (connectors.length > 0) {
+                  connect({ connector: connectors[0] });
+                } else {
+                  showTooltip(
+                    "Please install a wallet extension to connect",
+                    "error"
+                  );
+                }
               }}
               className="px-6 py-2.5 bg-gradient-to-r from-purple-primary to-blue-primary rounded-xl font-semibold hover:scale-105 transition-transform shadow-lg shadow-purple-primary/20"
             >
               {/* TODO: Uncomment after installing wagmi (Step 3) */}
-              {/* {isConnected && address
+              {isConnected && address
                 ? `${address.slice(0, 6)}...${address.slice(-4)}`
-                : "Connect Wallet"} */}
-              Connect Wallet
+                : "Connect Wallet"}
+              {/* Connect Wallet */}
             </button>
           )}
         </div>
@@ -103,6 +146,68 @@ export default function Home() {
           {/* Features */}
         </div>
       </main>
+
+      {/* Tooltip Notification */}
+      {tooltip.visible && (
+        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 animate-in slide-in-from-top-4 fade-in">
+          <div
+            className={`px-6 py-4 rounded-xl shadow-2xl backdrop-blur-xl border ${
+              tooltip.type === "loading"
+                ? "bg-blue-500/20 border-blue-400/30 text-blue-200"
+                : tooltip.type === "success"
+                ? "bg-green-500/20 border-green-400/30 text-green-200"
+                : "bg-red-500/20 border-red-400/30 text-red-200"
+            } flex items-center gap-3 min-w-[300px] max-w-[90vw]`}
+          >
+            {tooltip.type === "loading" && (
+              <svg
+                className="w-5 h-5 animate-spin"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+            )}
+            {tooltip.type === "success" && (
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            )}
+            {tooltip.type === "error" && (
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            )}
+            <span className="text-sm font-medium">{tooltip.message}</span>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="relative z-10 px-6 py-8 mt-20 border-t border-white/5">

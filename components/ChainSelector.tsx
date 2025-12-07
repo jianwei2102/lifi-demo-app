@@ -4,6 +4,7 @@
 // This component displays available chains for selection
 // TODO: After installing @lifi/sdk, this will use real chain data from useLiFiChains hook
 
+import { useState, useMemo } from 'react';
 import { Chain } from '@/lib/mockData';
 
 interface ChainSelectorProps {
@@ -14,6 +15,21 @@ interface ChainSelectorProps {
 }
 
 export default function ChainSelector({ chains, selectedChain, onSelect, onClose }: ChainSelectorProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter chains based on search query
+  const filteredChains = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return chains;
+    }
+    const query = searchQuery.toLowerCase();
+    return chains.filter(chain => 
+      chain.name.toLowerCase().includes(query) ||
+      chain.id.toLowerCase().includes(query) ||
+      (!isNaN(parseInt(chain.id)) && parseInt(chain.id).toString().includes(query))
+    );
+  }, [chains, searchQuery]);
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
       <div
@@ -39,6 +55,8 @@ export default function ChainSelector({ chains, selectedChain, onSelect, onClose
         <div className="mb-4">
           <input
             type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search chains..."
             className="w-full px-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl outline-none focus:border-purple-primary/50 transition-colors placeholder-gray-500"
           />
@@ -46,7 +64,12 @@ export default function ChainSelector({ chains, selectedChain, onSelect, onClose
 
         {/* Chain List */}
         <div className="space-y-2 max-h-[400px] overflow-y-auto">
-          {chains.map((chain) => (
+          {filteredChains.length === 0 ? (
+            <div className="text-center py-8 text-gray-500 text-sm">
+              No chains found matching &quot;{searchQuery}&quot;
+            </div>
+          ) : (
+            filteredChains.map((chain) => (
             <button
               key={chain.id}
               onClick={() => onSelect(chain)}
@@ -56,10 +79,33 @@ export default function ChainSelector({ chains, selectedChain, onSelect, onClose
                   : 'border border-transparent'
               }`}
             >
-              <span className="text-2xl">{chain.icon}</span>
+              {/* Chain Icon - Use image if available, otherwise use emoji */}
+              <div className="relative w-8 h-8 flex items-center justify-center">
+                {chain.logoURI ? (
+                  <img 
+                    src={chain.logoURI} 
+                    alt={chain.name}
+                    className="w-8 h-8 rounded-full"
+                    onError={(e) => {
+                      // Fallback to emoji if image fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const fallback = target.parentElement?.querySelector('.chain-fallback') as HTMLElement;
+                      if (fallback) fallback.style.display = 'block';
+                    }}
+                  />
+                ) : null}
+                <span 
+                  className={`text-2xl chain-fallback ${chain.logoURI ? 'hidden' : 'block'}`}
+                >
+                  {chain.icon}
+                </span>
+              </div>
               <div className="flex-1 text-left">
                 <div className="font-semibold">{chain.name}</div>
-                <div className="text-xs text-gray-400">Chain ID: {chain.id}</div>
+                <div className="text-xs text-gray-400">
+                  Chain ID: {!isNaN(parseInt(chain.id)) ? parseInt(chain.id) : chain.id}
+                </div>
               </div>
               {selectedChain.id === chain.id && (
                 <svg className="w-5 h-5 text-purple-primary" fill="currentColor" viewBox="0 0 20 20">
@@ -67,7 +113,8 @@ export default function ChainSelector({ chains, selectedChain, onSelect, onClose
                 </svg>
               )}
             </button>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
