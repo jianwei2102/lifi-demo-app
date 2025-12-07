@@ -23,7 +23,28 @@ This guide provides step-by-step instructions for integrating Li.Fi into your br
 
 ### 1.1 Install Required Packages
 
-First, install the necessary packages for Li.Fi integration:
+First, install the necessary packages for Li.Fi integration. You have two options:
+
+#### Option A: Install All Packages at Once (Recommended)
+
+If you want both Widget and SDK functionality, install all packages:
+
+```bash
+npm install @lifi/widget @lifi/sdk wagmi viem @tanstack/react-query
+```
+
+Or with yarn:
+
+```bash
+yarn add @lifi/widget @lifi/sdk wagmi viem @tanstack/react-query
+```
+
+**Note:** If these packages are listed as `optionalDependencies` in your `package.json`, you need to install them explicitly. They won't be installed automatically with `npm install`.
+
+#### Option B: Install Step by Step
+
+**For Widget Mode Only:**
+The widget has its own wallet connection built-in, so you can start using it immediately without additional setup!
 
 ```bash
 npm install @lifi/widget @lifi/sdk
@@ -35,9 +56,8 @@ Or with yarn:
 yarn add @lifi/widget @lifi/sdk
 ```
 
-**Note:** The widget has its own wallet connection built-in, so you can start using it immediately without additional setup! Wagmi is only needed if you want to use SDK mode (Step 4).
-
-If you plan to use SDK mode, you'll also need:
+**For SDK Mode:**
+If you plan to use SDK mode (Step 4), you'll also need:
 
 ```bash
 npm install wagmi viem @tanstack/react-query
@@ -48,6 +68,31 @@ Or with yarn:
 ```bash
 yarn add wagmi viem @tanstack/react-query
 ```
+
+### 1.2 Project Dependencies
+
+This project also requires the following core dependencies (which should already be installed if you're using this template):
+
+**Core Framework:**
+- **Next.js 16+** - React framework
+- **React 19+** - UI library
+- **React DOM 19+** - DOM rendering
+
+**Development Tools:**
+- **TypeScript 5+** - Type safety
+- **Tailwind CSS 4+** - Styling
+- **ESLint** - Code linting
+- **@types/node** - Node.js type definitions
+- **@types/react** - React type definitions
+- **@types/react-dom** - React DOM type definitions
+
+If starting from scratch, create a Next.js project first:
+
+```bash
+npx create-next-app@latest my-bridge-app --typescript --tailwind --app
+```
+
+Then install the Li.Fi packages as described above.
 
 **Why @tanstack/react-query?**
 
