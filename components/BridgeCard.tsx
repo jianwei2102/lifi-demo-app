@@ -9,6 +9,7 @@ import { Chain, Token, mockChains, mockTokens } from "@/lib/mockData";
 import ChainSelector from "./ChainSelector";
 import TokenSelector from "./TokenSelector";
 // TODO: Uncomment after installing @lifi/sdk
+/*
 import {
   useLiFiChains,
   useLiFiTokens,
@@ -16,10 +17,14 @@ import {
   useLiFiExecute,
   useLiFiTokenBalance,
 } from "@/lib/lifi/hooks";
-import { useWallet } from "@/hooks/useWallet";
-import { parseTokenAmount } from "@/lib/lifi/utils";
+*/
+// TODO: Uncomment after installing wagmi (Step 3)
+// import { useWallet } from "@/hooks/useWallet";
+// TODO: Uncomment after installing @lifi/sdk
+// import { parseTokenAmount } from "@/lib/lifi/utils";
 // Import Li.Fi SDK types
-import type { RouteExtended, LiFiStepExtended } from "@lifi/sdk";
+// TODO: Uncomment after installing @lifi/sdk
+// import type { RouteExtended, LiFiStepExtended } from "@lifi/sdk";
 
 // Define Quote type based on Li.Fi SDK structure (used for type safety in quoteDetails)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -51,6 +56,8 @@ export default function BridgeCard() {
   const [toToken, setToToken] = useState<Token>(mockTokens[0]);
 
   // STEP 3: Use Li.Fi hooks to fetch real data
+  // TODO: Uncomment after installing @lifi/sdk
+  /*
   const { chains: lifiChains, error: chainsError } = useLiFiChains();
   const { tokens: lifiFromTokens, error: fromTokensError } = useLiFiTokens(
     fromChain.id
@@ -58,14 +65,17 @@ export default function BridgeCard() {
   const { tokens: lifiToTokens, error: toTokensError } = useLiFiTokens(
     toChain.id
   );
+  */
 
   // Use Li.Fi chains when available, fallback to mock chains
-  const availableChains = lifiChains.length > 0 ? lifiChains : mockChains;
-  const availableFromTokens =
-    lifiFromTokens.length > 0 ? lifiFromTokens : mockTokens;
-  const availableToTokens = lifiToTokens.length > 0 ? lifiToTokens : mockTokens;
+  // TODO: Uncomment after installing @lifi/sdk
+  const availableChains = mockChains; // lifiChains.length > 0 ? lifiChains : mockChains;
+  const availableFromTokens = mockTokens; // lifiFromTokens.length > 0 ? lifiFromTokens : mockTokens;
+  const availableToTokens = mockTokens; // lifiToTokens.length > 0 ? lifiToTokens : mockTokens;
 
-  // Debug logging for chains and tokens
+  // STEP 3: Debug logging for chains and tokens
+  // TODO: Uncomment after installing @lifi/sdk
+  /*
   useEffect(() => {
     if (chainsError) {
       console.error("❌ Chains error:", chainsError);
@@ -99,6 +109,10 @@ export default function BridgeCard() {
     fromChain.id,
     toChain.id,
   ]);
+  */
+  // STEP 3: Li.Fi hooks for quotes, execution, and balance
+  // TODO: Uncomment after installing @lifi/sdk
+  /*
   const {
     quote,
     loading: quoteLoading,
@@ -107,8 +121,18 @@ export default function BridgeCard() {
     clearQuote,
   } = useLiFiQuote();
   const { execute } = useLiFiExecute();
-  const { address, isConnected } = useWallet();
-  const { getBalance: getTokenBalance } = useLiFiTokenBalance();
+  */
+  // TODO: Uncomment after installing wagmi (Step 3)
+  // const { address, isConnected } = useWallet();
+  // TODO: Uncomment after installing @lifi/sdk
+  // const { getBalance: getTokenBalance } = useLiFiTokenBalance();
+  
+  // Placeholder values for tutorial mode
+  const quote = null;
+  const quoteLoading = false;
+  const quoteError = null;
+  const address = "";
+  const isConnected = false;
 
   // State for token balance
   const [tokenBalance, setTokenBalance] = useState<string>("0.00");
@@ -139,7 +163,8 @@ export default function BridgeCard() {
   const [showToTokenModal, setShowToTokenModal] = useState(false);
 
   // STEP 3: Update chains when Li.Fi data is loaded
-  // This ensures we switch from mock chains (string IDs) to real chains (numeric IDs) immediately
+  // TODO: Uncomment after installing @lifi/sdk
+  /*
   useEffect(() => {
     if (lifiChains.length > 0) {
       // Check if we're using mock data (string IDs) or if chain ID is not numeric
@@ -163,8 +188,11 @@ export default function BridgeCard() {
       }
     }
   }, [lifiChains]); // eslint-disable-line react-hooks/exhaustive-deps
+  */
 
   // STEP 3: Update from tokens when from chain changes
+  // TODO: Uncomment after installing @lifi/sdk
+  /*
   useEffect(() => {
     if (lifiFromTokens.length > 0) {
       // Only update if we're still using mock data or token doesn't match current chain
@@ -176,8 +204,11 @@ export default function BridgeCard() {
       }
     }
   }, [lifiFromTokens, fromChain.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  */
 
   // STEP 3: Update to tokens when to chain changes
+  // TODO: Uncomment after installing @lifi/sdk
+  /*
   useEffect(() => {
     if (lifiToTokens.length > 0) {
       // Only update if we're still using mock data or token doesn't match current chain
@@ -187,8 +218,11 @@ export default function BridgeCard() {
       }
     }
   }, [lifiToTokens, toChain.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  */
 
-  // Fetch token balance when address, chain, token changes, or after transaction
+  // STEP 3: Fetch token balance when address, chain, token changes, or after transaction
+  // TODO: Uncomment after installing @lifi/sdk and wagmi (Step 3)
+  /*
   useEffect(() => {
     const fetchBalance = async () => {
       // Skip if LiFi chains haven't loaded yet (we need numeric chain IDs)
@@ -241,6 +275,7 @@ export default function BridgeCard() {
     lifiChains.length, // Wait for LiFi chains to load before fetching balance
     getTokenBalance, // This is now memoized with useCallback, so it's stable
   ]);
+  */
 
   // Balance is only fetched when a token is selected (handled in the fetchBalance useEffect above)
 
@@ -261,8 +296,8 @@ export default function BridgeCard() {
   };
 
   // STEP 3: Get quote from Li.Fi when relevant parameters change
-  // Only trigger when: fromChain, toChain, fromToken, toToken, or amount changes
-  // Added debouncing and duplicate request prevention
+  // TODO: Uncomment after installing @lifi/sdk
+  /*
   useEffect(() => {
     // Clear any pending timeout
     if (quoteTimeoutRef.current) {
@@ -376,12 +411,15 @@ export default function BridgeCard() {
     address,
     getQuote,
   ]);
+  */
 
   // For now, use mock calculations
   // const estimatedReceive = amount ? (parseFloat(amount) * 0.998).toFixed(6) : '0.00';
   // const bridgeFee = amount ? (parseFloat(amount) * 0.002).toFixed(6) : '0.00';
 
   // STEP 3: Use real quote data when available
+  // TODO: Uncomment after installing @lifi/sdk
+  /*
   const formatQuoteAmount = (amount: string, decimals: number = 18): string => {
     const num = parseFloat(amount) / Math.pow(10, decimals);
     if (num === 0) return "0.00";
@@ -390,8 +428,12 @@ export default function BridgeCard() {
     if (num < 1) return num.toFixed(8).replace(/\.?0+$/, "");
     return num.toFixed(6).replace(/\.?0+$/, "");
   };
+  */
 
   // Extract quote details
+  // TODO: Uncomment after installing @lifi/sdk
+  const quoteDetails = null;
+  /*
   const quoteDetails = quote
     ? {
         toAmount: quote.estimate?.toAmount
@@ -436,6 +478,7 @@ export default function BridgeCard() {
         toToken: quote.action?.toToken,
       }
     : null;
+  */
 
   // Helper function to show tooltip
   const showTooltip = (
@@ -466,7 +509,11 @@ export default function BridgeCard() {
   };
 
   // STEP 3: Handle bridge execution
+  // TODO: Uncomment after installing @lifi/sdk and wagmi (Step 3)
   const handleBridge = async () => {
+    // TODO: Uncomment after installing @lifi/sdk and wagmi (Step 3)
+    showTooltip("Please complete SDK integration to enable bridging", "error");
+    /*
     if (!quote || !isConnected || !address) {
       showTooltip("Please connect your wallet first", "error");
       return;
@@ -619,6 +666,7 @@ export default function BridgeCard() {
         showTooltip(`Transaction failed: ${errorMessage}`, "error");
       }
     }
+    */
   };
 
   return (
@@ -684,10 +732,11 @@ export default function BridgeCard() {
             <div className="flex items-center gap-3 mb-3">
               <button
                 onClick={() => {
-                  if (!isConnected || !address) {
-                    showTooltip("Please connect your wallet first", "error");
-                    return;
-                  }
+                  // TODO: Uncomment after installing wagmi (Step 3)
+                  // if (!isConnected || !address) {
+                  //   showTooltip("Please connect your wallet first", "error");
+                  //   return;
+                  // }
                   setShowFromChainModal(true);
                 }}
                 className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors border border-white/10"
@@ -735,10 +784,11 @@ export default function BridgeCard() {
 
               <button
                 onClick={() => {
-                  if (!isConnected || !address) {
-                    showTooltip("Please connect your wallet first", "error");
-                    return;
-                  }
+                  // TODO: Uncomment after installing wagmi (Step 3)
+                  // if (!isConnected || !address) {
+                  //   showTooltip("Please connect your wallet first", "error");
+                  //   return;
+                  // }
                   setShowFromTokenModal(true);
                 }}
                 className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors border border-white/10"
@@ -841,10 +891,11 @@ export default function BridgeCard() {
             <div className="flex items-center gap-2 mb-3">
               <button
                 onClick={() => {
-                  if (!isConnected || !address) {
-                    showTooltip("Please connect your wallet first", "error");
-                    return;
-                  }
+                  // TODO: Uncomment after installing wagmi (Step 3)
+                  // if (!isConnected || !address) {
+                  //   showTooltip("Please connect your wallet first", "error");
+                  //   return;
+                  // }
                   setShowToChainModal(true);
                 }}
                 className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors border border-white/10"
@@ -892,10 +943,11 @@ export default function BridgeCard() {
 
               <button
                 onClick={() => {
-                  if (!isConnected || !address) {
-                    showTooltip("Please connect your wallet first", "error");
-                    return;
-                  }
+                  // TODO: Uncomment after installing wagmi (Step 3)
+                  // if (!isConnected || !address) {
+                  //   showTooltip("Please connect your wallet first", "error");
+                  //   return;
+                  // }
                   setShowToTokenModal(true);
                 }}
                 className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors border border-white/10"
@@ -1113,22 +1165,27 @@ export default function BridgeCard() {
           </div>
         </div>
 
-        {/* Bridge Button */}
-        {/* STEP 3: Update button to use handleBridge function after SDK integration */}
+        {/* STEP 3: Bridge Button */}
+        {/* TODO: Uncomment after installing @lifi/sdk and wagmi (Step 3) */}
         <button
           disabled={
             !amount ||
-            parseFloat(amount) === 0 ||
-            !isBalanceSufficient() ||
-            !quote ||
-            !isConnected
+            parseFloat(amount) === 0
+            // TODO: Uncomment after installing @lifi/sdk and wagmi (Step 3)
+            // || !isBalanceSufficient() ||
+            // !quote ||
+            // !isConnected
           }
           onClick={() => {
             handleBridge();
           }}
           className="w-full mt-6 py-4 bg-linear-to-r from-purple-primary to-blue-primary rounded-xl font-semibold text-lg hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-purple-primary/20"
         >
-          {!isConnected
+          {/* TODO: Uncomment after installing @lifi/sdk and wagmi (Step 3) */}
+          {!amount || parseFloat(amount) === 0
+            ? "Enter Amount"
+            : "Bridge Tokens"}
+          {/* {!isConnected
             ? "Connect Wallet"
             : !amount || parseFloat(amount) === 0
             ? "Enter Amount"
@@ -1136,7 +1193,7 @@ export default function BridgeCard() {
             ? "Insufficient Balance"
             : !quote
             ? "Loading Quote..."
-            : "Bridge Tokens"}
+            : "Bridge Tokens"} */}
         </button>
 
         {/* Disclaimer */}
